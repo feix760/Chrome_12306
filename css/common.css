@@ -1,0 +1,58 @@
+
+html,body, span, div, p, td,a,ul,li,img,dd,dl,dt,form{
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+summary,details,header,section,footer,hgroup,nav,mark,embed,datalist,article,canvas,time{
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+h1,h2,h3,h4,h5{
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+input{margin: 0px;padding: 0px;}
+iframe{ padding:0;margin:0;border:0;}
+body{    
+    line-height:1.5;/* 统一 line-height */
+    padding-bottom: 1px;
+}
+textarea,input,select,body,button{
+    /* 默认字体 */
+    font-size: 12px;
+    position: relative;
+    font-family : verdana,"微软雅黑","宋体","細明體", "新細明體", "標楷體",'Lucida Grande','Lucida Sans Unicode',arial,sans-serif;
+}
+button{
+    cursor:pointer;
+    line-height:1.1;
+}
+
+/* 清除浮动 */
+.clear{
+    clear:both;float:none; height:0px; overflow:hidden;margin:0; padding:0; border:none; display:block;
+    clear:both!important;float:none!important; height:0px!important; overflow:hidden!important;margin:0!important; padding:0!important; border:none!important; display:block!important;
+}
+
+/* h* especially for ie6,7 */
+h1{
+    font-size:1.8em;
+}
+h2{
+    font-size:1.5em;
+}
+h3{
+    font-size:1.3em;
+}
+h4{
+    font-size:1.2em;
+}
+h5{
+    font-size:1.1em;
+}
+
+
+

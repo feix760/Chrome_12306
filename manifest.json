@@ -1,0 +1,23 @@
+{
+    "name": "12306",
+    "version": "1.0",
+    "manifest_version": 2,
+    "description": "12306抢票 382184760@qq.com",
+    "browser_action": {"default_icon": "icon.png"},
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "icons": {"48": "icon48.png",
+        "128": "icon128.png"},
+    "permissions": [
+        "tabs",
+        "activeTab",
+        "cookies",
+        "http://*/*",
+        "https://*/*",
+        "notifications",
+        "downloads",
+        "webRequest",
+        "webRequestBlocking"
+    ]
+}
