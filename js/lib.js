@@ -162,24 +162,6 @@
     });
 })();
 
-(function() {
-    function exprEscape(str) {
-        return str.replace(/[\\\^$*+?{}[\](),.!\-|]/g, '\\$&');
-    }
-    function decode(template, obj) {
-        var key, expr;
-        for (key in obj) {
-            expr = new RegExp(exprEscape('{{' + key + '}}'), 'g');
-            template = template.replace(expr, obj[key]);
-        }
-        /* use '{{{}}' to present a '{' */
-        template = template.replace(exprEscape('{{{}}'), '{');
-        return template;
-    }
-    $.extend({
-        decodeTemplate: decode
-    });
-})();
 
 Date.prototype.pattern = function(fmt) {
     var week = {
@@ -195,7 +177,7 @@ Date.prototype.pattern = function(fmt) {
         'E': week[this.getDay() + ""],
         'y': this.getFullYear(), //年
         "M": this.getMonth() + 1, //月份
-        "d": this.getDate(), //日        
+        "d": this.getDate(), //日
         "h": this.getHours() % 12 === 0 ? 12 : this.getHours() % 12, //小时
         "H": this.getHours(), //小时
         "m": this.getMinutes(), //分

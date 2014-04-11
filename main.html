@@ -6,12 +6,16 @@
     <link  href="css/common.css" rel="stylesheet" />
     <link  href="main.css" rel="stylesheet" />
     <script src="js/jquery-2.0.3.min.js" ></script>
+    <script src="js/template.js" ></script>
     <script src="js/jquery-ui-1.10.3.min.js" ></script>
     <script src="js/jquery.ui.autocomplete.js" ></script>
     <script src="js/jquery.ui.datepicker-zh-CN.js" ></script>
     <script src="js/lib.js" ></script>
     <script src="js/station_name.js" ></script>
-    <script src="main_head.js" ></script>
+    <script src="Chrome.js" ></script>
+    <script src="REST.js" ></script>
+    <script src="main.js" ></script>
+
     <title>l2306抢票</title>
     <style>
         .switch_from_to{
@@ -24,54 +28,34 @@
 </head>
 <body>
     <div>
-        <button type="button" class="console_switch">console</button>
-    </div>
-    <div id="console">
-        <div>
-            <textarea  id="console_url" cols="65" rows="3">http://www.baidu.com</textarea>
-        </div>
-        <div>
-            <textarea  id="console_data" cols="65" rows="4"></textarea>
-        </div>
-        <div>
-            <select id="console_method">
-                <option value="get">get</option>
-                <option value="post">post</option>
-            </select>
-            <select id="console_datatype">
-                <option value="html">html</option>
-                <option value="json">json</option>
-            </select>
-            <button type="button" class="console_parse">parse</button>
-            <button type="button" class="console_reset">reset</button>
-            <button type="button" class="console_submit">submit</button>
-        </div>
-    </div>
-    <div>
         <span class="title">用户名:</span>
-        <input type="text" value="feix760" id="user"/>
+        <input type="text" value="" id="user"/>
         <span class="title">密码:</span>
-        <input type="password" value="00654321" id="pwd"/>
+        <input type="password" value="" id="pwd"/>
         <span class="title">验证码1:</span>
-        <input type="text" class="code" id="login_code" value="" maxlength="5"/>
+        <input type="text" class="code code1" id="login_code" _sync="false" value="" maxlength="5"/>
         <img class="checkcode checkcode1" src="https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew.do?module=login&rand=sjrand&"/>
-        <!--button type="button" class="clear_cookies">clear_cookies</button-->
         <button type="button" class="login">登录</button>
+        <button type="button" class="logout">退出登录</button>
     </div>
     <div>
         <span class="title">发站:</span>
         <input type="text" value="北京" id="from_station" class="station_name"/>
-        <span class="title"><span class="switch_from_to">&lt;&gt;</span>&nbsp;到站:</span>
+        <span class="title"><span class="switch_dest">&lt;&gt;</span>&nbsp;到站:</span>
         <input type="text" value="南昌" id="to_station"  class="station_name"/>
         <span class="title">日期:</span>
-        <input type="text" value="2014-01-17" id="train_date"/>
-        <button type="button" class="resign_btn">改签</button>
+        <input type="text" value=""   id="train_date"/>
+        <button type="button" class="resign_btn">改签抢票</button>
     </div>
     <div id="trains">
         <span class="title">车次:</span>
-        <select class="train_idx">
+        <select id="available_trains">
+
         </select>
-        <select class="train_type">
+        <script type="text/html" id="available_train_item">
+            <option value="{{train}}">{{train}}</option>
+        </script>
+        <select id="available_train_type">
             <option value="yz">硬座</option>
             <option value="wz">无座</option>
             <option value="yw">硬卧</option>
@@ -80,20 +64,23 @@
         </select>
         <button type="button" class="add_train">添加</button>
         <span id="trains_list" class="items_list">
-            <!--
-            <span class="item default_item" _v="T172,yz">
-                <span class="hint">T172-硬座</span>
+            <script id="train_item" type="text/html">
+                <span class="item" _train="{{train}}" _type="{{type}}">
+                <span class="hint">{{train}}-{{typeName}}</span>
                 <button class="delete_item" type="button">删除</button>
-            </span>
-            -->
+                </span>
+            </script>
         </span>
     </div>
     <div class="noresign">
         <span class="title">添加乘客:</span>
         <span class="title">已存乘客</span>
         <select id="old_p">
-            <!--option value="36220219910701281X" _id="36220219910701281X" _name="袁飞翔">袁飞翔</option-->
+
         </select>
+        <script id="t_old_p" type="text/html">
+            <option value="{{id}}" _id="{{id}}" _name="{{name}}" _type="{{type}}">{{name}}</option>
+        </script>
         <select id="old_p_type">
             <option value="1">成人票</option>
             <option value="3">学生票</option>
@@ -101,7 +88,7 @@
         </select>
         <button type="button" class="old_p_add">添加</button>
     </div>
-    <div class="noresign">
+    <!--div class="noresign">
         <span class="title"></span>
         <span class="title">未存乘客</span>
         <span class="title">姓名:</span>
@@ -114,49 +101,53 @@
             <option value="2">儿童票</option>
         </select>
         <button type="button" class="new_p_add">添加</button>
-    </div>
+    </div-->
     <div  class="noresign">
-        <span class="title">乘客：</span>
+        <span class="title">车票乘客：</span>
         <span id="passenger_list" class="items_list">
-            <!--
-            <span class="item" _name="袁飞翔" _id="36220219910701281X" _type="3" _oldtype="3">
-                <span class="hint">袁飞翔,36220219910701281X,学生票</span>
+            <script id="t_passenger" type="text/html">
+                <span class="item" _name="{{name}}" _id="{{id}}" _type="{{type}}" _oldType="{{oldType}}">
+                <span class="hint">{{name}},{{id}},{{typeName}}</span>
                 <button class="delete_item" type="button">删除</button>
-            </span>
-            -->            
+                </span>
+            </script>
         </span>
     </div>
 
     <div class="resign">
         <span class="title">可改签车票:</span>
         <select id="tickets">
-            <!--option>北京-南昌,2014-01-18,袁飞翔,36220219910701281X,学生票</option-->
+
         </select>
+        <script id="t_available_ticket" type="text/html">
+            <option>{{date}},{{train}},{{from}}-{{to}},{{name}},{{id}},{{type}},{{seatName}}</option>
+        </script>
         <button type="button" class="resign_add">添加</button>
     </div>
     <div  class="resign">
         <span class="title">改签车票：</span>
         <span id="resign_tickets" class="items_list">
-            <!--span class="item">
-                <span class="hint">北京-南昌,2014-01-18,袁飞翔,36220219910701281X,学生票</span>
+            <script id="t_ticket_to_resign" type="text/html">
+                <span class="item">
+                <span class="hint">{{date}},{{train}},{{from}}-{{to}},{{name}},{{id}},{{type}},{{seatName}}</span>
                 <button class="delete_item" type="button">删除</button>
-            </span-->
+                </span>
+            </script>
         </span>
     </div>
 
     <div>
         <span class="title">验证码2:</span>
-        <input type="text" class="code" id="order_code" value="" maxlength="5"/>
-        <img class="checkcode checkcode2" src="https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp&"/>
+        <input type="text" class="code code2" id="order_code" _sync="false"  value="" maxlength="5"/>
+        <img class="checkcode checkcode2"
+             src="https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp&"/>
         <span class="title">查询间隔:</span>
         <input type="text" value="200" style="width:35px;" id="query_duration"/>毫秒
         <input type="checkbox" id="stu"/>学生票
         <button type="button" class="query">开始查询</button>
         <button type="button" class="stop_query">停止查询</button>
-        <!--
-        <button type="button" class="submit_order">submit_order</button>
-        -->
-        <button type="button" class="clear_log">clear log</button>
+
+        <button type="button" class="clear_log">清除日志</button>
         <button type="button" class="alarm_switch">试听声音</button>
         <a target="_blank" href="https://kyfw.12306.cn/otn/">12306</a>
         <a target="_blank" href="https://kyfw.12306.cn/otn/queryOrder/initNoComplete">查看订单</a>
@@ -164,9 +155,15 @@
     <div class="log_wrapper">
         <div class="log"></div>
     </div>
+    <div id="tips" class="hint">
+        1、请先手动打开12306确认证书错误；
+        <br>2、点击开始查询之后，听到报警声，立刻输入验证码2，订单将自动提交；
+        <br>3、可以先抢购前一天的票，后一天使用改签抢票功能，增加一次机会；
+        <br>4、可以结合使用cookie隔离器插件，登陆多个账号；
+    </div>
     <div id="alarm">
         <audio id="alarm_audio" src="alarm.wav" loop="loop" ></audio>
     </div>
-    <script src="main.js" ></script>
+
 </body>
 </html>

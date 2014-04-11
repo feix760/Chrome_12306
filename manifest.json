@@ -3,12 +3,11 @@
     "version": "1.0",
     "manifest_version": 2,
     "description": "12306抢票 382184760@qq.com",
-    "browser_action": {"default_icon": "icon.png"},
+    "browser_action": {"default_icon": "icon32.png"},
     "background": {
         "scripts": ["background.js"]
     },
-    "icons": {"48": "icon48.png",
-        "128": "icon128.png"},
+    "icons": {"48": "icon48.png"},
     "permissions": [
         "tabs",
         "activeTab",
@@ -17,6 +16,7 @@
         "https://*/*",
         "notifications",
         "downloads",
+        "storage",
         "webRequest",
         "webRequestBlocking"
     ]

@@ -4,7 +4,7 @@ body{
 .log_wrapper{
     border:1px solid #aaa;
     max-width:650px;
-    height:220px;
+    height:190px;
     overflow-y: scroll;
     padding:4px 6px;
 }
@@ -18,9 +18,7 @@ body{
 input[type=text],input[type=password]{
     width:80px;
 }
-#console{
-    display: none;
-}
+
 .title{
     display: inline-block;
     min-width: 55px;
@@ -64,15 +62,15 @@ body #ui-datepicker-div{
 }
 @keyframes flash{
     0%{background-color: red;}
-50%{background-color: red;}
-51%{background-color: green;}
-100%{background-color: green;}
+    50%{background-color: red;}
+    51%{background-color: green;}
+    100%{background-color: green;}
 }
 @-webkit-keyframes flash{
     0%{background-color: red;}
-50%{background-color: red;}
-51%{background-color: green;}
-100%{background-color: green;}
+    50%{background-color: red;}
+    51%{background-color: green;}
+    100%{background-color: green;}
 }
 .hint{
     color: red;
