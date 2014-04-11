@@ -63,8 +63,8 @@
                         back(null);
                         return;
                     }
-                }
-                back(v[iter.shift()]);
+                }                
+                back(v[iter.shift()]);                
             });
         },
         syncDel: function(key, back) {
@@ -108,8 +108,8 @@
             if (!back) {
                 back = $.noop;
             }
-            chrome.storage.sync.set({}, function() {
-                back();
+            chrome.storage.sync.clear(function() {
+                back();              
             });
         }
     };
@@ -135,6 +135,9 @@
         loadAll: function() {
             var that = this;
             C.syncGet('viewholder', function(holder) {
+                if(!holder){
+                    return;
+                }
                 $(that.allSelector).each(function() {
                     var ele = $(this),
                             id = ele[0].id,
