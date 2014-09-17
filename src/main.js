@@ -341,7 +341,7 @@ $(function() {
                 grabber.tour_flag = 'dc';
                 $('.noresign').show();
                 $('.resign').hide();
-                $(this).text('改签查询');
+                $(this).text('改签抢票');
             } else {
                 grabber.tour_flag = 'gc';
                 $('.resign').show();

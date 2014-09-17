@@ -10,7 +10,7 @@ module.exports = function( grunt ) {
             build:{
                 expand:true,
                 cwd:'src/',
-                src: ['**','!**/*.js','!**/*.css'],  
+                src: ['**','!**/*.js','**/*.min.js','!**/*.css','**/*.min.css'],  
                 dest: 'build/'
             }
         },
@@ -18,7 +18,7 @@ module.exports = function( grunt ) {
             build: {  
               expand:true,
               cwd:'src/',
-              src: '**/*.js',  
+              src: ['**/*.js','!**/*.min.js'],  
               dest: 'build/'
             }  
         },
@@ -26,7 +26,7 @@ module.exports = function( grunt ) {
           build: {  
               expand:true,
               cwd:'src/',
-              src: '**/*.css',  
+              src: ['**/*.css','!**/*.min.css'], 
               dest: 'build/'
             } 
         },

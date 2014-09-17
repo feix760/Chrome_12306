@@ -74,7 +74,7 @@
         },
         query: function(from, to, date, isStudent, back) {
             var purpose_codes = isStudent ? '0X00' : 'ADULT';
-            ajax('https://kyfw.12306.cn/otn/leftTicket/query', {
+            ajax('https://kyfw.12306.cn/otn/leftTicket/queryT', {
                 data: 'leftTicketDTO.train_date=' + date +
                         '&leftTicketDTO.from_station=' + from +
                         '&leftTicketDTO.to_station=' + to +

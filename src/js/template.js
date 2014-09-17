@@ -1,8 +1,6 @@
-
 /*
- *
  *  chrome除沙箱不能执行eval，所以编一个简单的template处理组件
-    接口名类似artTemplate的，但只提供变量替换的功能
+ *  接口名类似artTemplate的，但只提供变量替换的功能
  */
 (function(global) {
     var T = {

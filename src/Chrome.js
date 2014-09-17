@@ -63,8 +63,10 @@
                         back(null);
                         return;
                     }
-                }                
-                back(v[iter.shift()]);                
+                }
+                var item=v[iter.shift()];
+                console.log(item);
+                back(item);
             });
         },
         syncDel: function(key, back) {
@@ -93,6 +95,7 @@
                 back = $.noop;
             }
             chrome.storage.sync.get(function(items) {
+                console.log(items);
                 back(items);
             });
         },
@@ -109,7 +112,7 @@
                 back = $.noop;
             }
             chrome.storage.sync.clear(function() {
-                back();              
+                back();
             });
         }
     };
