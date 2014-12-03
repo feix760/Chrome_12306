@@ -1,1 +1,88 @@
-body{padding:10px 15px}.log_wrapper{border:1px solid #aaa;max-width:650px;height:190px;overflow-y:scroll;padding:4px 6px}.log_wrapper div{margin-top:2px}.log{word-break:break-all;word-wrap:break-word}input[type=text],input[type=password]{width:80px}.title{display:inline-block;min-width:55px;text-align:right}.checkcode,.checkcode_hint{display:inline-block;width:75px;height:25px;vertical-align:middle;cursor:pointer}div{margin-top:4px}body #ui-datepicker-div{font-size:1em!important}.items_list{}.items_list .item{display:inline-block;border:1px solid #00f;padding:0 6px;margin-left:4px}#alarm{position:fixed;margin:0;width:100%;height:40px;top:0;left:0;background:red;display:none;animation:flash 300ms ease 0s infinite;-webkit-animation:flash 300ms ease 0s infinite}@keyframes flash{0%{background-color:red}50%{background-color:red}51%{background-color:green}100%{background-color:green}}@-webkit-keyframes flash{0%{background-color:red}50%{background-color:red}51%{background-color:green}100%{background-color:green}}.hint{color:red;font-size:1em}
+body {
+    padding: 10px 15px
+}
+.log_wrapper {
+    border: 1px solid #aaa;
+    max-width: 650px;
+    height: 190px;
+    overflow-y: scroll;
+    padding: 4px 6px
+}
+.log_wrapper div {
+    margin-top: 2px
+}
+.log {
+    word-break: break-all;
+    word-wrap: break-word
+}
+input[type=text], input[type=password] {
+    width: 80px
+}
+.title {
+    display: inline-block;
+    min-width: 55px;
+    text-align: right
+}
+.checkcode, .checkcode_hint {
+    display: inline-block;
+    width: 75px;
+    height: 25px;
+    vertical-align: middle;
+    cursor: pointer
+}
+div {
+    margin-top: 4px
+}
+body #ui-datepicker-div {
+    font-size: 1em!important
+}
+.items_list {}.items_list .item {
+    display: inline-block;
+    border: 1px solid #00f;
+    padding: 0 6px;
+    margin-left: 4px
+}
+#alarm {
+    position: fixed;
+    margin: 0;
+    width: 100%;
+    height: 40px;
+    top: 0;
+    left: 0;
+    background: red;
+    display: none;
+    animation: flash 300ms ease 0s infinite;
+    -webkit-animation: flash 300ms ease 0s infinite
+}
+@keyframes flash {
+    0% {
+        background-color: red
+    }
+    50% {
+        background-color: red
+    }
+    51% {
+        background-color: green
+    }
+    100% {
+        background-color: green
+    }
+}
+@-webkit-keyframes flash {
+    0% {
+        background-color: red
+    }
+    50% {
+        background-color: red
+    }
+    51% {
+        background-color: green
+    }
+    100% {
+        background-color: green
+    }
+}
+.hint {
+    color: red;
+    font-size: 1em
+}
