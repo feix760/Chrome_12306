@@ -27,7 +27,7 @@
                     rand: rands[randId]
                 },
                 success: function(data) {
-                    if (data['data'] && data['data'] == 'Y') {
+                    if (data.data && data.data.result === '1') {
                         back(true);
                     } else {
                         back(false);
@@ -73,8 +73,13 @@
             });
         },
         query: function(from, to, date, isStudent, back) {
+            var me = this;
+            var queryArgs = [].slice.apply(arguments);
             var purpose_codes = isStudent ? '0X00' : 'ADULT';
-            ajax('https://kyfw.12306.cn/otn/leftTicket/queryT', {
+            var thisUrl = me.queryUrlT 
+                ? 'https://kyfw.12306.cn/otn/leftTicket/queryT' 
+                : 'https://kyfw.12306.cn/otn/leftTicket/query';
+            ajax(thisUrl, {
                 data: 'leftTicketDTO.train_date=' + date +
                         '&leftTicketDTO.from_station=' + from +
                         '&leftTicketDTO.to_station=' + to +
@@ -83,10 +88,15 @@
                 success: function(data, text) {
                     if (data && data['data']) {
                         back(data.data);
-                    }
-                    else {
+                    } else {
                         log(text);
-                        back(null);
+                        if (text.indexOf('c_url') !== -1 && !me.queryUrlT) {
+                            me.queryUrlT = true;
+                            log('try queryT');
+                            me.query.apply(me, queryArgs);
+                        } else {
+                            back(null);
+                        }
                     }
                 }
             });
