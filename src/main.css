@@ -42,6 +42,11 @@ body #ui-datepicker-div {
     padding: 0 6px;
     margin-left: 4px
 }
+#time {
+    font-size: 1.2em;
+    color: #008000;
+    font-weight: bold;
+}
 #alarm {
     position: fixed;
     margin: 0;

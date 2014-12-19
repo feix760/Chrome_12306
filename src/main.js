@@ -1,4 +1,3 @@
-
 //log
 (function() {
     var logger = {
@@ -6,8 +5,10 @@
         getId: function() {
             return ('0000000000' + ++this.id).match(/[\w]{6}$/)[0];
         },
-        log: function(text) {
-            var id = $('<span></span>').html('&nbsp;&nbsp;&nbsp;' + this.getId() + '&nbsp;');
+        log: function() {
+            var text = String.format.apply(this, arguments);
+            var id = $('<span></span>')
+                .html('&nbsp;&nbsp;&nbsp;' + this.getId() + '&nbsp;');
             var t = $('<span></span>').text(text);
             $('.log').append($('<div></div>').append(id).append(t));
             //新增一条再删除一条
@@ -18,9 +19,9 @@
             setTimeout(function() {
                 $('.log_wrapper').each(function() {
                     var jthis = $(this),
-                            jlog = jthis.find('.log');
+                        jlog = jthis.find('.log');
                     var th = jthis.height(),
-                            lh = jlog.height();
+                        lh = jlog.height();
                     if (lh > th) {
                         jthis.scrollTop(lh - th);
                     }
@@ -38,6 +39,9 @@
         log: $.proxy(logger.log, logger)
     });
 
+    setInterval(function() {
+        $('#time').text(new Date().pattern('HH:mm:ss'));
+    }, 1000);
 })();
 
 $(function() {
@@ -47,15 +51,16 @@ $(function() {
 
     var tdate = $('#train_date');
     tdate.datepicker({
-        dateFormat: "yy-mm-dd", maxDate: '+60', minDate: 0
+        dateFormat: "yy-mm-dd",
+        maxDate: '+60',
+        minDate: 0
     }).change(function() {
         interact.loadAvailableTrains();
     });
     setTimeout(function() {
         var t = new Date().pattern('yyyy-MM-dd');
         if (tdate.val() < t) {
-            tdate.val(t).trigger('change');
-            ;
+            tdate.val(t).trigger('change');;
         }
     }, 200);
 
@@ -86,7 +91,7 @@ $(function() {
     });
     $(document).on('click', '.checkcode', function() {
         var jthis = $(this),
-                s = this.src;
+            s = this.src;
         s = s.replace(/\&[^&]*$/, '');
         s = s + '&' + new Date().getTime();
         var hint = jthis.prev('.checkcode_hint');
@@ -150,9 +155,36 @@ $(function() {
 
 $(function() {
     window.interact = {
+        getInputInfo: function () {
+            var trains = [];
+            $.each($('#trains_list .item'), function() {
+                trains.push({
+                    no: $(this).attr('_train'), 
+                    type: $(this).attr('_type')
+                });
+            });
+            var passengers = [];
+            $('#passenger_list .item').each(function() {
+                var jthis = $(this);
+                passengers.push({
+                    name: jthis.attr('_name'),
+                    id: jthis.attr('_id'), 
+                    type: jthis.attr('_type')
+                });
+            });
+            return {
+                from: station_names[$('#from_station').val()], 
+                to: station_names[$('#to_station').val()], 
+                date: $('#train_date').val(), 
+                duration: +$('#query_duration').val(),
+                trains: trains, 
+                passengers: passengers, 
+                isStr: $('#stu')[0].checked
+            };  
+        },
         switchDest: function() {
             var a = $('#from_station'),
-                    b = $('#to_station');
+                b = $('#to_station');
             var v = a.val();
             a.val(b.val());
             b.val(v);
@@ -165,22 +197,22 @@ $(function() {
         },
         loadAvailableTrains: function() {
             var from = station_names[$('#from_station').val()],
-                    to = station_names[$('#to_station').val()],
-                    date = $('#train_date').val();
+                to = station_names[$('#to_station').val()],
+                date = $('#train_date').val();
 
             if (!from || !to) {
                 return;
             }
             var trains = $('#available_trains'),
-                    $data = from + '_' + to + '_' + date;
+                $data = from + '_' + to + '_' + date;
             if (trains.attr('_data') == $data) {
                 return;
             }
             trains.attr('_data', $data);
 
             log('获取列车列表..');
-            R.query(from, to, date, false, function(data) {
-                if (!data || trains.attr('_data') != $data) {
+            R.query(from, to, date, false).done(function (data) {
+                if (trains.attr('_data') != $data) {
                     return;
                 }
                 trains.empty();
@@ -191,12 +223,14 @@ $(function() {
                 });
                 $('#trains_list .item').remove();
                 log('获取列车列表成功');
+            }).fail(function () {
+                log('获取列车列表失败');
             });
         },
         addTrain: function() {
             var train = $('#available_trains option:selected').text(),
-                    type = $('#available_train_type option:selected').val(),
-                    typeName = $('#available_train_type option:selected').text();
+                type = $('#available_train_type option:selected').val(),
+                typeName = $('#available_train_type option:selected').text();
             if (!train) {
                 return;
             }
@@ -213,8 +247,7 @@ $(function() {
         },
         _addPassenger: function(p) {
             var list = $('#passenger_list');
-            if (p.name == '' || p.id.length != 18
-                    || list.find('.item[_id=' + p.id + ']').length != 0) {
+            if (p.name == '' || p.id.length != 18 || list.find('.item[_id=' + p.id + ']').length != 0) {
                 return false;
             }
 
@@ -238,7 +271,7 @@ $(function() {
         },
         addOldPassenger: function() {
             var o = $('#old_p option:selected'),
-                    t = $('#old_p_type option:selected');
+                t = $('#old_p_type option:selected');
             if (o.length == 0) {
                 return;
             }
@@ -252,63 +285,55 @@ $(function() {
         },
         loadMyPassengers: function() {
             log('获取已存乘客..');
-            R.getTokens(function(token) {
-                R.getMyPassengers(token, function(data) {
-                    if (!data) {
-                        log('获取已存乘客失败，是否登陆了？');
-                        return;
-                    }
-                    log('获取已存乘客成功');
-                    var options = $('#old_p').empty();
-                    $.each(data, function() {
-                        options.append(template('t_old_p', {
-                            name: this['passenger_name'],
-                            id: this['passenger_id_no'],
-                            type: this['passenger_type']
-                        }));
-                    });
+            R.getTokens().then(function (token) {
+                return R.getMyPassengers(token);
+            }).done(function (data) {
+                log('获取已存乘客成功');
+                var options = $('#old_p').empty();
+                $.each(data, function() {
+                    options.append(template('t_old_p', {
+                        name: this['passenger_name'],
+                        id: this['passenger_id_no'],
+                        type: this['passenger_type']
+                    }));
                 });
+            }).fail(function () {
+                log('获取已存乘客失败，是否登陆了？');
             });
-
         },
         autoSubmitOrder: function() {
             var ipt = $("#order_code"),
-                    code = ipt.val();
-            if (code.length != 4
-                    || ipt.attr('_last_code') == code) {
+                code = ipt.val();
+            if (code.length != 4 || ipt.attr('_last_code') == code) {
                 return;
             }
             ipt.attr('_last_code', code);
             log('验证验证码： ' + code + " 中...");
-            R.checkRandCode(2, code, function(rt) {
-                if (rt) {
-                    alarm.hide();
-                    log('验证码正确，自动提交订单！');
-                    grabber.submitOrder(code);
-                } else {
-                    log('验证码： ' + code + " 错误！");
-                }
+            R.checkRandCode(2, code).done(function () {
+                alarm.hide();
+                log('验证码正确，自动提交订单！');
+                grabber.submitOrder(code);
+            }).fail(function () {
+                log('验证码： ' + code + " 错误！");
             });
         },
         logout: function() {
             log('退出登陆中..');
-            R.logout(function() {
+            R.logout().done(function () {
                 log('退出登陆成功！');
                 newcode(1);
             });
         },
         login: function() {
             var user = $.trim($('#user').val()),
-                    pwd = $.trim($('#pwd').val()),
-                    code = $.trim($('#login_code').val());
+                pwd = $.trim($('#pwd').val()),
+                code = $.trim($('#login_code').val());
             log('登陆中..');
-            R.login(user, pwd, code, function(rt) {
-                if (rt) {
-                    log('登陆成功');
-                    interact.loadMyPassengers();
-                } else {
-                    log('登陆失败！');
-                }
+            R.login(user, pwd, code).done(function () {
+                log('登陆成功');
+                interact.loadMyPassengers();
+            }).fail(function () {
+                log('登陆失败！');
             });
         }
     };
@@ -350,6 +375,7 @@ $(function() {
                 $(this).text('订购新票');
             }
         },
+
         loadAvailableTickets: function() {
             var container = $('#tickets');
             container.empty();
@@ -452,70 +478,77 @@ $(function() {
         token: null,
         keyChange: null,
         isStu: false,
-        _query: function(back) {
-            var that = this,
-                    thisStu = false,
-                    task = function() {
-                var from = station_names[$('#from_station').val()],
-                        to = station_names[$('#to_station').val()],
-                        date = $('#train_date').val(),
-                        duration = parseInt($('#query_duration').val()),
-                        trains = that.getTrains();
-
-                that.isStu = $('#stu')[0].checked;
-                if (trains.length == 0) {
-                    log('请选择车次！');
+        _query: function () {
+            var me = this;
+            var dtd = $.Deferred();
+            var task = function () {
+                var inputInfo = interact.getInputInfo();
+                if (me.r.isStopped()) {
+                    dtd.reject();
+                    return;
                 }
-                if (that.isStu) {
-                    //如果勾选了学生票，交换性的查询成人票和学生票，因为在服务器端两个页面cache更新的时间不同。
-                    //黄牛囤积的票一般都卖给成人，所以学生票可以很容易地从黄牛手中抢到
-                    thisStu = !thisStu;
-                } else {
-                    thisStu = false;
-                }
-                log(thisStu ? '查询学生票...' : '查询成人票...');
-                R.query(from, to, date, thisStu, function(data) {
-                    if (!data) {
-                        if (that.r.isStopped()) {
-                            back(false);
-                        } else {
-                            setTimeout(task, 500);
-                        }
-                        return;
-                    }
-                    $.each(trains, function() {
-                        var trainName = this[0],
-                                ot = this[1],
-                                t = ot + '_num',
-                                item = that._findTrainItem(data, trainName);
-                        if (!item) {
-                            log('error:' + trainName);
-                            return true;
-                        }
-                        var info = item['queryLeftNewDTO'];
-                        log('query:' + 'train,' + info['station_train_code'] + '  text:' + item['buttonTextInfo']);
-                        if (item['buttonTextInfo'] == '预订') {
-                            var seats = info;
-                            log('硬座：' + seats.yz_num + '   无座：' + seats.wz_num + '   硬卧：'
-                                    + seats.yw_num + '   二等座：' + seats.ze_num + '   一等座：' + seats.zy_num);
-                            if (seats[t] != '无' && seats[t] != '--') {
-                                that.itemType = ot;
-                                that.item = item;
-                                return false;
-                            }
-                        }
-                    });
-                    if (that.item != null) {
-                        back(true);
-                    } else if (that.r.isStopped()) {
-                        back(false);
+                me._queryForOneAvailableItem().done(function (item) {
+                    if (item) {
+                        dtd.resolve(item);
                     } else {
-                        setTimeout(task, duration);
+                        setTimeout(task, inputInfo.duration);
                     }
+                }).fail(function () {
+                    setTimeout(task, inputInfo.duration);
                 });
             };
-            task();
+            R.getLoginKey('query', true).done(function () {
+                task();
+            });
+            return dtd.promise();
         },
+        _queryForOneAvailableItem: function () {
+            var me = this;
+            var inputInfo = interact.getInputInfo();
+            if (inputInfo.trains.length == 0) {
+                log('请选择车次！');
+            }
+            // 如果勾选了学生票，交换性的查询成人票和学生票
+            // 在服务器端两个页面cache更新的时间不同。
+            // 黄牛囤积的票一般都卖给成人，所以学生票可以很容易地从黄牛手中抢到
+            me.isStu = inputInfo.isStu ? !me.isStu : false;
+            log(me.isStu ? '查询学生票...' : '查询成人票...');
+            return R.query(inputInfo.from, inputInfo.to, inputInfo.date, me.isStu)
+                .then(function (data) {
+                var availableItem = null;
+                $.each(inputInfo.trains, function(i, trainItem) {
+                    var item = me._findTrainItem(data, trainItem.no);
+                    if (!item) {
+                        return true;
+                    }
+                    var info = item['queryLeftNewDTO'];
+                    log(
+                        'query train: %0 text: %1', 
+                        info['station_train_code'], 
+                        item['buttonTextInfo']
+                    );
+                    if (item['buttonTextInfo'] == '预订') {
+                        log(
+                            '硬座：%0 无座：%1 硬卧：%2 二等座：%3 一等座：%4', 
+                            info.yz_num, info.wz_num, 
+                            info.yw_num, info.ze_num, info.zy_num
+                        );
+                        var seatKey = trainItem.type + '_num';
+                        if (info[seatKey] 
+                            && info[seatKey] != '无' 
+                            && info[seatKey] != '--'
+                        ) {
+                            availableItem = 
+                                $.extend(item, {seatType: trainItem.type});
+                            return false;
+                        }
+                    }
+                });
+                return availableItem;
+            }).fail(function () {
+                log('query fail');
+            });
+        }, 
         getTrains: function() {
             var items = [];
             $.each($('#trains_list .item'), function() {
@@ -524,57 +557,35 @@ $(function() {
             return items;
         },
         _findTrainItem: function(data, name) {
-            var item = null;
-            $.each(data, function() {
-                if (this['queryLeftNewDTO']['station_train_code'].toUpperCase() == name.toUpperCase()) {
-                    item = this;
+            var theTrain = null;
+            $.each(data, function(i, item) {
+                if (item.queryLeftNewDTO.station_train_code.toUpperCase() 
+                    === name.toUpperCase()
+                ) {
+                    theTrain = item;
                     return false;
                 }
             });
-            return item;
+            return theTrain;
         },
-        initDc: function(back) {
-            this._submitOrderRequest('dc', R.getTokens, back);
+        initDc: function(item) {
+            return this._submitOrderRequest(item, 'dc', R.getTokens);
         },
-        _submitOrderRequest: function(tour_flag, tokenGetter, back) {
-            var that = this;
-            var item = this.item;
-            var Q = new Queue();
-            Q.next();
-            Q.step(function() {
-                R.submitOrderRequest(decodeURIComponent(item['secretStr']),
-                        item['queryLeftNewDTO']['start_train_date'],
-                        item['queryLeftNewDTO']['from_station_name'],
-                        item['queryLeftNewDTO']['to_station_name'],
-                        tour_flag,
-                        that.isStu,
-                        function(rt) {
-                            if (rt) {
-                                Q.next();
-                            } else {
-                                back();
-                            }
-                        });
-            });
-
-            Q.step(function() {
-                tokenGetter(function(token, keyChange) {
-                    if (token != null) {
-                        that.token = token;
-                        that.keyChange = keyChange;
-                        Q.next();
-                    } else {
-                        back();
-                    }
+        _submitOrderRequest: function(item, tour_flag, tokenGetter) {
+            var me = this;
+            return R.submitOrderRequest(item, tour_flag, me.isStu)
+                .then(function () {
+                    return tokenGetter.call(R);
+                }).done(function (token, keyChange) {
+                    newcode(2);
+                    alarm.show();
+                    me.token = token;
+                    me.keyChange = keyChange;
+                    log('token: %0 keyChange: %1', token, keyChange);
+                    log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
+                }).fail(function () {
+                    log('fail..');
                 });
-            });
-
-            Q.step(function() {
-                newcode(2);
-                alarm.show();
-                log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
-                back();
-            });
         },
         _getPassengers: function(passengerDTOs, types, t) {
             var seats = {
@@ -586,11 +597,11 @@ $(function() {
             };
             var seatType = seats[this.itemType];
             var ps = [],
-                    oldps = [];
+                oldps = [];
             $.each(passengerDTOs, function(idx, item) {
                 var id = item['passenger_id_no'],
-                        name = item['passenger_name'],
-                        ticket_type = types[idx];
+                    name = item['passenger_name'],
+                    ticket_type = types[idx];
                 ps.push(seatType + ',0,' + ticket_type + ',' + name + ',1,' + id + ',,' + t);
                 oldps.push(name + ',1,' + id + ',' + ticket_type);
             });
@@ -602,13 +613,13 @@ $(function() {
         },
         getPassengers: function() {
             var passengerDTOs = [],
-                    types = [],
-                    t = 'N';
+                types = [],
+                t = 'N';
             $('#passenger_list .item').each(function() {
                 var jthis = $(this);
                 var name = jthis.attr('_name'),
-                        id = jthis.attr('_id'),
-                        type = jthis.attr('_type');
+                    id = jthis.attr('_id'),
+                    type = jthis.attr('_type');
                 passengerDTOs.push({
                     passenger_id_no: id,
                     passenger_name: name
@@ -619,31 +630,27 @@ $(function() {
         },
         _submitOrder: function(ocode, back) {
             var that = this,
-                    tour_flag = 'dc',
-                    passengers = that.getPassengers();
+                tour_flag = 'dc',
+                passengers = that.getPassengers();
             if (passengers.length == 0) {
                 log('请选择乘客！');
                 back(false);
                 return;
             }
             var item = that.item,
-                    ps = passengers['ps'],
-                    oldps = passengers['oldps'];
+                ps = passengers['ps'],
+                oldps = passengers['oldps'];
             log('ps:' + ps);
             log('oldPs:' + oldps);
 
-            R.checkOrderInfo(ps, oldps, ocode, that.token, tour_flag, function(rt) {
-                if (rt) {
-                    R.confirmSingleForQueue(ps, oldps,
-                            ocode, item['queryLeftNewDTO']['yp_info'],
-                            that.token, that.keyChange,
-                            item['queryLeftNewDTO']['location_code'],
-                            function(rt) {
-                                back(rt);
-                            });
-                } else {
-                    back(false);
-                }
+            return R.checkOrderInfo(ps, oldps, ocode, that.token, tour_flag)
+                .then(function () {
+                return R.confirmSingleForQueue(
+                    ps, oldps,
+                    ocode, item['queryLeftNewDTO']['yp_info'],
+                    that.token, that.keyChange,
+                    item['queryLeftNewDTO']['location_code']
+                );
             });
         }
     };
@@ -691,8 +698,8 @@ $(function() {
         },
         getResignPassengers: function() {
             var passengerDTOs = [],
-                    types = [],
-                    t = 'Y';
+                types = [],
+                t = 'Y';
             $('#resign_tickets .item').each(function() {
                 var ticket = $.data(this, 'ticket');
                 passengerDTOs.push(ticket['passengerDTO']);
@@ -711,26 +718,23 @@ $(function() {
                 return;
             }
             var item = that.item,
-                    ps = passengers['ps'],
-                    oldps = passengers['oldps'];
+                ps = passengers['ps'],
+                oldps = passengers['oldps'];
             log('ps:' + ps);
             log('oldPs:' + oldps);
             R.checkOrderInfo(ps, oldps, ocode, that.token, tour_flag, function(rt) {
                 if (rt) {
-
                     R.confirmResignForQueue(ps, oldps,
-                            ocode, item['queryLeftNewDTO']['yp_info'],
-                            that.token, that.keyChange,
-                            item['queryLeftNewDTO']['location_code'],
-                            function(rt) {
-                                back(rt);
-                            });
+                        ocode, item['queryLeftNewDTO']['yp_info'],
+                        that.token, that.keyChange,
+                        item['queryLeftNewDTO']['location_code'],
+                        function(rt) {
+                            back(rt);
+                        });
                 } else {
                     back(false);
                 }
             });
-
-
         }
     });
 
@@ -740,45 +744,37 @@ $(function() {
             if (!that.r.run()) {
                 return;
             }
-
-            that._query(function(rt) {
-                if (rt) {
-                    var back = function() {
-                        that.r.stop();
-                        that.r.isStopped();
-                    };
-                    window.GET_TRAIN_TIME = new Date().getTime();
-                    if (that.tour_flag == 'dc') {
-                        that.initDc(back);
-                    } else if (that.tour_flag == 'gc') {
-                        that.initGc(back);
-                    }
-                }
+            that._query().done(function (item) {
+                window.GET_TRAIN_TIME = new Date().getTime();
+                that.item = item;
+                var next = that.tour_flag == 'dc' ? that.initDc : that.initGc;
+                next.call(that, item).always(function () {
+                    that.r.stop();
+                    that.r.isStopped();
+                });
             });
         },
         stop: function() {
             this.r.stop();
+            this.r.isStopped();
         },
         submitOrder: function(ocode) {
-            var that = this;
-            if (!that.r.run()) {
+            var me = this;
+            if (!me.r.run()) {
                 return;
             }
-            var back = function(rt) {
-                that.r.stop();
-                that.r.isStopped();
-                if (rt) {
-                    var time_used = formatFloat((new Date().getTime() - GET_TRAIN_TIME) / 1000, '.3');
-                    log('提交订单成功，耗时:' + time_used + "s，请点击查看订单前往12306完成付款。");
-                } else {
-                    log('提交订单失败！');
-                }
-            };
-            if (that.tour_flag == 'gc') {
-                that._submitResignOrder(ocode, back);
-            } else if (that.tour_flag == 'dc') {
-                that._submitOrder(ocode, back);
-            }
+            var submitFun = me.tour_flag === 'gc' 
+                ? me._submitResignOrder : me._submitOrder;
+            submitFun.call(me, ocode).done(function () {
+                me.stop();
+                log(
+                    '提交订单成功，耗时: %0s，请点击查看订单前往12306完成付款。', 
+                    formatFloat((+new Date() - GET_TRAIN_TIME) / 1000, '.3')
+                );
+            }).fail(function () {
+                me.stop();
+                log('提交订单失败！');
+            });
         }
     });
 
