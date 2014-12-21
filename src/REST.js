@@ -2,6 +2,9 @@
 (function(global) {
 
     var ajax = function(url, settings) {
+        settings.headers = $.extend({
+            _$Origin: 'https://kyfw.12306.cn'
+        }, settings.headers || {});
         return $.ajax(url, settings).then(
             function (data, status, jqXhr) {
                 var html = jqXhr.responseText;
@@ -56,39 +59,35 @@
         }, 
         _getLoginKeyFormData: function (data) {
             var me = this;
+            var dtd = $.Deferred();
             var url;
             try {
                 url = data
                     .match(/<script src\="\/otn\/dynamicJs\/(\w+)"/)[1];
             } catch (e) {}
-            return ajax(
+            ajax(
                 'https://kyfw.12306.cn/otn/dynamicJs/' + url,
                 {
                     dataType: 'html'
                 }
             ).then(function (data) {
-                var dtd = $.Deferred();
                 var key;
                 var subUrl;
                 try {
                     key = data
                         .match(/\{var key='(\w+)'/)[1];
-                    subUrl = data.match(/url :'\/otn\/dynamicJs\/(\w+)'/)[1];
                 } catch (e) {}
-                ajax(
-                    'https://kyfw.12306.cn/otn/dynamicJs/' + subUrl
-                ).always(function () {
-                    var keyVlues = [key, '1111'];
-                    me._loginKey = {
-                        myversion: 'undefined'
-                    };
-                    me._loginKey[key] = 
-                        encode32(bin216(Base32.encrypt(keyVlues[1], keyVlues[0])));
-                    me._loginKeyTime = +new Date();
+
+                var keyVlues = [key, '1111'];
+                me._loginKey = {};
+                me._loginKey[key] = 
+                    encode32(bin216(Base32.encrypt(keyVlues[1], keyVlues[0])));
+                me._loginKeyTime = +new Date();
+                setTimeout(function () {
                     dtd.resolve(me._loginKey);
-                });
-                return dtd.promise();
+                }, 100);
             });
+            return dtd.promise();
         },
         login: function(user, pwd, code) {
             return this.getLoginKey('query', true).then(function (keyObj) {
@@ -96,7 +95,8 @@
                     'loginUserDTO.user_name': user, 
                     'userDTO.password': pwd, 
                     randCode: code, 
-                    randCode_validate: ''
+                    randCode_validate: '', 
+                    myversion: 'undefined'
                 };
                 return ajax(
                     'https://kyfw.12306.cn/otn/login/loginAysnSuggest', 
@@ -118,7 +118,8 @@
                     data: {
                         _json_att: '',
                         REPEAT_SUBMIT_TOKEN: token
-                    }
+                    }, 
+                    type: 'post'
                 }
             ).then(function (data) {
                 if (data && data.data && data.data.normal_passengers) {
@@ -175,7 +176,9 @@
                             query_from_station_name: 
                                 item.queryLeftNewDTO.from_station_name,
                             query_to_station_name: 
-                                item.queryLeftNewDTO.to_station_name
+                                item.queryLeftNewDTO.to_station_name, 
+                            myversion: 'undefined', 
+                            'undefined': ''
                         }, keyObj), 
                         type: 'post'
                     }
@@ -191,8 +194,10 @@
             return ajax(
                 'https://kyfw.12306.cn/otn/confirmPassenger/initDc', 
                 {
-                    cache: false,
-                    type: 'get', 
+                    data: {
+                        _json_att: ''
+                    }, 
+                    type: 'post', 
                     dataType: 'html'
                 }
             ).then(function (data) {
@@ -227,7 +232,8 @@
                             randCode: code,
                             REPEAT_SUBMIT_TOKEN: token,
                             _json_att: ''
-                        }, keyObj)
+                        }, keyObj),
+                        type: 'post'
                     }
                 ).then(function (data) {
                     if (!(data && data.data && data.data.submitStatus)) {
@@ -253,7 +259,8 @@
                         purpose_codes: '00',
                         train_location: train_location,
                         _json_att: ''
-                    }
+                    }, 
+                    type: 'post'
                 }
             ).then(function (data) {
                 if (!(data && data.data && data.data.submitStatus)) {

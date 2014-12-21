@@ -375,7 +375,6 @@ $(function() {
                 $(this).text('订购新票');
             }
         },
-
         loadAvailableTickets: function() {
             var container = $('#tickets');
             container.empty();
