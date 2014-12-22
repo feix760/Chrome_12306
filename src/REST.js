@@ -99,14 +99,10 @@
                             type: 'post'
                         }
                     ).always(function () {
-                        setTimeout(function () {
-                            dtd.resolve(me._loginKey);
-                        }, 100);
+                        dtd.resolve(me._loginKey);
                     });
                 } else {
-                    setTimeout(function () {
-                        dtd.resolve(me._loginKey);
-                    }, 100);
+                    dtd.resolve(me._loginKey);
                 }
             });
             return dtd.promise();
@@ -180,6 +176,34 @@
                 return req(me.queryUrl);
             });
         },
+        getQueueCount: function (item, seatType) {
+            var me = this;
+            var trainInfo = item.queryLeftNewDTO;
+            return ajax(
+                'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount', 
+                {
+                    data: {
+                        train_date: trainInfo.start_train_date, 
+                        train_no: trainInfo.train_no, 
+                        stationTrainCode: trainInfo.station_train_code,
+                        seatType: seatType, 
+                        fromStationTelecode: trainInfo.from_station_telecode, 
+                        toStationTelecode: trainInfo.to_station_telecode, 
+                        leftTicket: trainInfo.yp_info, 
+                        purpose_codes: '00', 
+                        _json_att: '', 
+                        REPEAT_SUBMIT_TOKEN: me.submitToken
+                    }, 
+                    type: 'post'
+                }
+            ).then(function (data) {
+                if (data && data.data) {
+                    return data.data;
+                } else {
+                    return $.Deferred().reject();
+                }
+            });
+        }, 
         submitOrderRequest: function(item, tour_flag, isStu) {
             var purpose_codes = isStu ? '0X00' : 'ADULT';
             return this.getLoginKey('query').then(function (keyObj) {
@@ -263,10 +287,7 @@
                 });
             });
         },
-        confirmSingleForQueue: function(
-                ps, oldps,
-                code, leftTicketStr, train_location
-        ) {
+        confirmSingleForQueue: function(ps, oldps, code, item) {
             var me = this;
             return ajax(
                 'https://kyfw.12306.cn/otn/confirmPassenger' 
@@ -278,9 +299,9 @@
                         randCode: code,
                         REPEAT_SUBMIT_TOKEN: me.submitToken,
                         key_check_isChange: me.keyChange,
-                        leftTicketStr: leftTicketStr,
+                        leftTicketStr: item.queryLeftNewDTO.yp_info,
                         purpose_codes: '00',
-                        train_location: train_location,
+                        train_location: item.queryLeftNewDTO.location_code,
                         _json_att: ''
                     }, 
                     type: 'post'
@@ -391,10 +412,7 @@
             this.submitToken = token;
             this.keyChange = keyChange;
         }, 
-        confirmResignForQueue: function(
-                ps, oldps,
-                code, leftTicketStr, train_location
-        ) {
+        confirmResignForQueue: function(ps, oldps, code, item) {
             var me = this;
             return ajax(
                 'https://kyfw.12306.cn/otn/confirmPassenger' 
@@ -405,9 +423,9 @@
                         oldPassengerStr: oldps,
                         randCode: code,
                         key_check_isChange: me.keyChange,
-                        leftTicketStr: leftTicketStr,
+                        leftTicketStr: item.queryLeftNewDTO.yp_info,
                         purpose_codes: '00',
-                        train_location: train_location,
+                        train_location: item.queryLeftNewDTO.location_code,
                         REPEAT_SUBMIT_TOKEN: me.submitToken,
                         _json_att: ''
                     }

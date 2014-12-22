@@ -179,6 +179,7 @@ $(function() {
                 duration: +$('#query_duration').val(),
                 trains: trains, 
                 passengers: passengers, 
+                submitQuery: $('#submit-query')[0].checked,
                 isStr: $('#stu')[0].checked
             };  
         },
@@ -362,13 +363,13 @@ $(function() {
     var Resign = {
         switchModel: function(e) {
             var that = Resign;
-            if (grabber.tour_flag == 'gc') {
-                grabber.tour_flag = 'dc';
+            if (grabber.tourFlag == 'gc') {
+                grabber.tourFlag = 'dc';
                 $('.noresign').show();
                 $('.resign').hide();
                 $(this).text('改签抢票');
             } else {
-                grabber.tour_flag = 'gc';
+                grabber.tourFlag = 'gc';
                 $('.resign').show();
                 $('.noresign').hide();
                 that.loadAvailableTickets();
@@ -471,9 +472,9 @@ $(function() {
     var grabber = {
         r: new Run(),
         item: null,
-        itemType: 'yz',
-        tour_flag: "dc",
+        tourFlag: "dc",
         isStu: false,
+        submitQuery: false, 
         _query: function () {
             var me = this;
             var dtd = $.Deferred();
@@ -483,7 +484,11 @@ $(function() {
                     dtd.reject();
                     return;
                 }
-                me._queryForOneAvailableItem().done(function (item) {
+                me.submitQuery = inputInfo.submitQuery;
+                var queryFun = me.submitQuery 
+                    ? me._submitForOneAvailableItem 
+                    : me._queryForOneAvailableItem;
+                queryFun.call(me).done(function (item) {
                     if (item) {
                         dtd.resolve(item);
                     } else {
@@ -498,6 +503,70 @@ $(function() {
             });
             return dtd.promise();
         },
+        _submitForOneAvailableItem: function () {
+            var me = this;
+            var inputInfo = interact.getInputInfo();
+            if (!inputInfo.trains.length) {
+                log('请选择车次！');
+                return $.Deferred().reject();
+            }
+            // 如果勾选了学生票，交换性的查询成人票和学生票
+            // 在服务器端两个页面cache更新的时间不同。
+            // 黄牛囤积的票一般都卖给成人，所以学生票可以很容易地从黄牛手中抢到
+            me.isStu = inputInfo.isStu ? !me.isStu : false;
+            log(me.isStu ? '查询学生票...' : '查询成人票...');
+            var availableItem = null;
+            return R.query(
+                inputInfo.from, inputInfo.to, inputInfo.date, me.isStu
+            ).then(
+                function (data) {
+                    var trainItem = inputInfo.trains[0];
+                    var item = me._findTrainItem(data, trainItem.no);
+                    if (!item) {
+                        return;
+                    }
+                    var info = item['queryLeftNewDTO'];
+                    log(
+                        'query train: %0 text: %1', 
+                        info['station_train_code'], 
+                        item['buttonTextInfo']
+                    );
+                    if (item['buttonTextInfo'] == '预订') {
+                        log(
+                            '硬座：%0 无座：%1 硬卧：%2 二等座：%3 一等座：%4', 
+                            info.yz_num, info.wz_num, 
+                            info.yw_num, info.ze_num, info.zy_num
+                        );
+                        var seatKey = trainItem.type + '_num';
+                        if (info[seatKey]
+                            && info[seatKey] != '--'
+                        ) {
+                            availableItem = 
+                                $.extend(item, {seatType: trainItem.type});
+                            if (info[seatKey] != '无') {
+                                availableItem.fromQuery = true;
+                            }
+                        }
+                    }
+                    if (availableItem && !availableItem.fromQuery) {
+                        return R.getTokens().then(function () {
+                            return R.getQueueCount(
+                                availableItem, availableItem.seatType
+                            );
+                        }).then(function (data) {
+                            if (!data.count) {
+                                availableItem = null;
+                            }
+                        });
+                    }
+                }, 
+                function (){
+                    log('query fail..');
+                }
+            ).then(function () {
+                return availableItem;
+            });
+        }, 
         _queryForOneAvailableItem: function () {
             var me = this;
             var inputInfo = interact.getInputInfo();
@@ -565,22 +634,24 @@ $(function() {
             return theTrain;
         },
         initDc: function() {
-            return this._submitOrderRequest('dc', R.getTokens);
+            return this._submitOrderRequest(R.getTokens);
         },
-        _submitOrderRequest: function(tour_flag, tokenGetter) {
+        _submitOrderRequest: function(tokenGetter) {
             var me = this;
             var item = me.item;
-            return R.submitOrderRequest(item, tour_flag, me.isStu)
-                .then(function () {
-                    return tokenGetter.call(R);
-                }).done(function () {
-                    newcode(2);
-                    alarm.show();
-                    log('token: %0 keyChange: %1', R.submitToken, R.keyChange);
-                    log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
-                }).fail(function () {
-                    log('fail..');
-                });
+            var dtd = me.submitQuery
+                ? $.Deferred().resolve().promise()
+                : R.submitOrderRequest(item, me.tourFlag, me.isStu)
+            return dtd.then(function () {
+                return tokenGetter.call(R);
+            }).done(function () {
+                newcode(2);
+                alarm.show();
+                log('token: %0 keyChange: %1', R.submitToken, R.keyChange);
+                log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
+            }).fail(function () {
+                log('fail..');
+            });
         },
         _getPassengers: function(passengerDTOs, types, t) {
             var seats = {
@@ -590,7 +661,7 @@ $(function() {
                 ze: 'O',
                 zy: 'M'
             };
-            var seatType = seats[this.itemType];
+            var seatType = seats[this.item.seatType];
             var ps = [],
                 oldps = [];
             $.each(passengerDTOs, function(idx, item) {
@@ -623,27 +694,24 @@ $(function() {
             });
             return this._getPassengers(passengerDTOs, types, t);
         },
-        _submitOrder: function(ocode, back) {
-            var that = this,
-                tour_flag = 'dc',
-                passengers = that.getPassengers();
-            if (passengers.length == 0) {
+        _submitOrder: function(ocode) {
+            var me = this;
+            var passengers = me.getPassengers();
+            if (!passengers.length) {
                 log('请选择乘客！');
-                back(false);
-                return;
+                return $.Deferred().reject().promise();
             }
-            var item = that.item,
+            var item = me.item,
                 ps = passengers['ps'],
                 oldps = passengers['oldps'];
             log('ps:' + ps);
             log('oldPs:' + oldps);
 
-            return R.checkOrderInfo(ps, oldps, ocode, tour_flag)
-                .then(function () {
+            return R.checkOrderInfo(
+                ps, oldps, ocode, me.tourFlag
+            ).then(function () {
                 return R.confirmSingleForQueue(
-                    ps, oldps,
-                    ocode, item['queryLeftNewDTO']['yp_info'],
-                    item['queryLeftNewDTO']['location_code']
+                    ps, oldps, ocode, item
                 );
             });
         }
@@ -651,7 +719,7 @@ $(function() {
 
     //改签
     $.extend(grabber, {
-        initGc: function(back) {
+        initGc: function() {
             var me = this;
             var tickets = me.getTickets();
             if (!tickets.length) {
@@ -684,7 +752,6 @@ $(function() {
         },
         _submitResignOrder: function(ocode) {
             var me = this;
-            var tour_flag = 'gc';
             var passengers = me.getResignPassengers();
             if (!passengers.length) {
                 log('请选择乘客！');
@@ -696,12 +763,10 @@ $(function() {
             log('ps:' + ps);
             log('oldPs:' + oldps);
 
-            return R.checkOrderInfo(ps, oldps, ocode, tour_flag)
+            return R.checkOrderInfo(ps, oldps, ocode, me.tourFlag)
                 .then(function () {
                 return R.confirmResignForQueue(
-                    ps, oldps,
-                    ocode, item['queryLeftNewDTO']['yp_info'],
-                    item['queryLeftNewDTO']['location_code']
+                    ps, oldps, ocode, item
                 );
             });
         }
@@ -709,17 +774,18 @@ $(function() {
 
     $.extend(grabber, {
         query: function() {
-            var that = this;
-            if (!that.r.run()) {
+            var me = this;
+            if (!me.r.run()) {
                 return;
             }
-            that._query().done(function (item) {
+            me._query().done(function (item) {
                 window.GET_TRAIN_TIME = new Date().getTime();
-                that.item = item;
-                var next = that.tour_flag == 'dc' ? that.initDc : that.initGc;
-                next.call(that).always(function () {
-                    that.r.stop();
-                    that.r.isStopped();
+                me.item = item;
+                var next = me.tourFlag == 'dc' 
+                    ? me.initDc : me.initGc;
+                next.call(me).always(function () {
+                    me.r.stop();
+                    me.r.isStopped();
                 });
             });
         },
@@ -732,7 +798,7 @@ $(function() {
             if (!me.r.run()) {
                 return;
             }
-            var submitFun = me.tour_flag === 'gc' 
+            var submitFun = me.tourFlag === 'gc' 
                 ? me._submitResignOrder : me._submitOrder;
             submitFun.call(me, ocode).done(function () {
                 me.stop();
