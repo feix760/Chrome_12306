@@ -144,7 +144,6 @@
              src="https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp&"/>
         <span class="title">查询间隔:</span>
         <input type="text" value="200" style="width:35px;" id="query_duration"/>毫秒
-        &nbsp;<input type="checkbox" id="submit-query"/>提交验票
         &nbsp;<input type="checkbox" id="stu"/>学生票
         <button type="button" class="query">开始查询</button>
         <button type="button" class="stop_query">停止查询</button>
@@ -165,6 +164,7 @@
     </div>
     <div id="alarm">
         <audio id="alarm_audio" src="alarm.wav" loop="loop" ></audio>
+        <audio id="alarm_alert_audio" src="alert.wav" loop="loop" ></audio>
     </div>
 
 </body>

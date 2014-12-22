@@ -1,7 +1,6 @@
-
 (function(global) {
-
-    var ajax = function(url, settings) {
+    function ajax(url, settings) {
+        settings = settings || {};
         settings.headers = $.extend({
             '_$Origin': 'https://kyfw.12306.cn',
             '_$X-Requested-With': 'XMLHttpRequest'
@@ -42,6 +41,21 @@
                 });
             }).promise();
         },
+        checkUser: function () {
+            return ajax(
+                'https://kyfw.12306.cn/otn/login/checkUser', 
+                {
+                    data: {
+                        _json_att: ''
+                    }, 
+                    type: 'post'
+                }
+            ).then(function (data) {
+                if (!data || !data.data || !data.data.flag) {
+                    return $.Deferred().reject(arguments).promise();
+                }
+            });
+        }, 
         getLoginKey: function (type, force) {
             var me = this;
             type = type || 'login';
@@ -142,7 +156,7 @@
                     data: {
                         _json_att: '',
                         REPEAT_SUBMIT_TOKEN: me.submitToken
-                    }, 
+                    },
                     type: 'post'
                 }
             ).then(function (data) {
