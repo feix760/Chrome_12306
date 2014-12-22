@@ -237,7 +237,10 @@ $(function() {
             }
 
             var list = $('#trains_list');
-            if (list.find('.item[_train=' + train + '][_type=' + type + ']').length != 0) {
+            if (
+                list.find('.item[_train=' + train + '][_type=' + type + ']')
+                    .length
+            ) {
                 return;
             }
             list.append(template('train_item', {
@@ -248,7 +251,10 @@ $(function() {
         },
         _addPassenger: function(p) {
             var list = $('#passenger_list');
-            if (p.name == '' || p.id.length != 18 || list.find('.item[_id=' + p.id + ']').length != 0) {
+            if (p.name == '' 
+                || p.id.length != 18 
+                || list.find('.item[_id=' + p.id + ']').length
+            ) {
                 return false;
             }
 
@@ -393,10 +399,13 @@ $(function() {
                             name: t['passengerDTO']['passenger_name'],
                             id: t['passengerDTO']['passenger_id_no'],
                             type: t['ticket_type_name'],
-                            seatName: t['seat_type_name'] + '-' + t['seat_name'],
+                            seatName: 
+                                t['seat_type_name'] + '-' + t['seat_name'],
                             train: t['stationTrainDTO']['station_train_code']
                         }));
-                        $.data(container.find('option:last').get(0), 'ticket', t);
+                        $.data(
+                            container.find('option:last').get(0), 'ticket', t
+                        );
                     });
                 });
             }).fail(function () {
@@ -527,7 +536,7 @@ $(function() {
                     }
                     var info = item['queryLeftNewDTO'];
                     log(
-                        'query train: %0 text: %1', 
+                        '%0：%1', 
                         info['station_train_code'], 
                         item['buttonTextInfo']
                     );
@@ -578,8 +587,9 @@ $(function() {
             // 黄牛囤积的票一般都卖给成人，所以学生票可以很容易地从黄牛手中抢到
             me.isStu = inputInfo.isStu ? !me.isStu : false;
             log(me.isStu ? '查询学生票...' : '查询成人票...');
-            return R.query(inputInfo.from, inputInfo.to, inputInfo.date, me.isStu)
-                .then(function (data) {
+            return R.query(
+                inputInfo.from, inputInfo.to, inputInfo.date, me.isStu
+            ).then(function (data) {
                 var availableItem = null;
                 $.each(inputInfo.trains, function(i, trainItem) {
                     var item = me._findTrainItem(data, trainItem.no);
@@ -588,7 +598,7 @@ $(function() {
                     }
                     var info = item['queryLeftNewDTO'];
                     log(
-                        'query train: %0 text: %1', 
+                        '%0：%1', 
                         info['station_train_code'], 
                         item['buttonTextInfo']
                     );
@@ -668,8 +678,10 @@ $(function() {
                 var id = item['passenger_id_no'],
                     name = item['passenger_name'],
                     ticket_type = types[idx];
-                ps.push(seatType + ',0,' + ticket_type + ',' + name + ',1,' + id + ',,' + t);
-                oldps.push(name + ',1,' + id + ',' + ticket_type);
+                ps.push(
+                    [seatType, 0, ticket_type, name, 1, id, '', t].join(',')
+                );
+                oldps.push([name, 1, id, ticket_type].join(','));
             });
             return {
                 ps: ps.join('_'),

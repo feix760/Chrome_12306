@@ -264,11 +264,13 @@
             var me = this;
             return this.getLoginKey().then(function (keyObj) {
                 return ajax(
-                    'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo', 
+                    'https://kyfw.12306.cn/otn/confirmPassenger' 
+                        + '/checkOrderInfo',
                     {
                         data: $.extend({
                             cancel_flag: 2,
-                            bed_level_order_num: '000000000000000000000000000000',
+                            bed_level_order_num: 
+                                '000000000000000000000000000000',
                             passengerTicketStr: ps,
                             oldPassengerStr: oldps,
                             tour_flag: tour_flag,
