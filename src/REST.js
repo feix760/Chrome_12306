@@ -3,7 +3,8 @@
 
     var ajax = function(url, settings) {
         settings.headers = $.extend({
-            _$Origin: 'https://kyfw.12306.cn'
+            _$Origin: 'https://kyfw.12306.cn',
+            '_$X-Requested-With': 'XMLHttpRequest'
         }, settings.headers || {});
         return $.ajax(url, settings).then(
             function (data, status, jqXhr) {
@@ -74,18 +75,39 @@
                 var key;
                 var subUrl;
                 try {
-                    key = data
-                        .match(/\{var key='(\w+)'/)[1];
+                    key = data.match(/\{var key='(\w+)'/)[1];
+                    var match = data
+                        .match(/ready[\s\S]{1,100}'\/otn\/dynamicJs\/(\w+)'/);
+                    subUrl = match ? match[1] : null;
                 } catch (e) {}
-
                 var keyVlues = [key, '1111'];
                 me._loginKey = {};
                 me._loginKey[key] = 
                     encode32(bin216(Base32.encrypt(keyVlues[1], keyVlues[0])));
                 me._loginKeyTime = +new Date();
-                setTimeout(function () {
-                    dtd.resolve(me._loginKey);
-                }, 100);
+                if (subUrl) {
+                    var params = {
+                        _json_att: ''
+                    };
+                    if (me.submitToken) {
+                        params.REPEAT_SUBMIT_TOKEN = me.submitToken;
+                    }
+                    ajax(
+                        'https://kyfw.12306.cn/otn/dynamicJs/' + subUrl, 
+                        {
+                            data: params, 
+                            type: 'post'
+                        }
+                    ).always(function () {
+                        setTimeout(function () {
+                            dtd.resolve(me._loginKey);
+                        }, 100);
+                    });
+                } else {
+                    setTimeout(function () {
+                        dtd.resolve(me._loginKey);
+                    }, 100);
+                }
             });
             return dtd.promise();
         },
@@ -111,13 +133,14 @@
                 });
             });
         },
-        getMyPassengers: function(token) {
+        getMyPassengers: function() {
+            var me = this;
             return ajax(
                 'https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs', 
                 {
                     data: {
                         _json_att: '',
-                        REPEAT_SUBMIT_TOKEN: token
+                        REPEAT_SUBMIT_TOKEN: me.submitToken
                     }, 
                     type: 'post'
                 }
@@ -209,16 +232,14 @@
                     key_change = data
                         .match(/key_check_isChange':'([\w]*)'/)[1];
                 } catch (e) {}
+                me._setToken(token, key_change);
                 if (data.indexOf('dynamicJs') !== -1) {
-                    return me._getLoginKeyFormData(data).then(function () {
-                        return $.Deferred().resolve(token, key_change);
-                    });
-                } else {
-                    return $.Deferred().resolve(token, key_change);
+                    return me._getLoginKeyFormData(data);
                 }
             });
         },
-        checkOrderInfo: function(ps, oldps, code, token, tour_flag) {
+        checkOrderInfo: function(ps, oldps, code, tour_flag) {
+            var me = this;
             return this.getLoginKey().then(function (keyObj) {
                 return ajax(
                     'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo', 
@@ -230,7 +251,7 @@
                             oldPassengerStr: oldps,
                             tour_flag: tour_flag,
                             randCode: code,
-                            REPEAT_SUBMIT_TOKEN: token,
+                            REPEAT_SUBMIT_TOKEN: me.submitToken,
                             _json_att: ''
                         }, keyObj),
                         type: 'post'
@@ -242,9 +263,11 @@
                 });
             });
         },
-        confirmSingleForQueue: function(ps, oldps,
-                code, leftTicketStr,
-                token, keyChange, train_location) {
+        confirmSingleForQueue: function(
+                ps, oldps,
+                code, leftTicketStr, train_location
+        ) {
+            var me = this;
             return ajax(
                 'https://kyfw.12306.cn/otn/confirmPassenger' 
                     + '/confirmSingleForQueue',
@@ -253,8 +276,8 @@
                         passengerTicketStr: ps,
                         oldPassengerStr: oldps,
                         randCode: code,
-                        REPEAT_SUBMIT_TOKEN: token,
-                        key_check_isChange: keyChange,
+                        REPEAT_SUBMIT_TOKEN: me.submitToken,
+                        key_check_isChange: me.keyChange,
                         leftTicketStr: leftTicketStr,
                         purpose_codes: '00',
                         train_location: train_location,
@@ -290,8 +313,10 @@
                         come_from_flag: 'my_order',
                         pageSize: 50,
                         pageIndex: 0,
+                        query_where: 'G',
                         sequeue_train_name: ''
-                    }
+                    },
+                    type: 'post'
                 }
             ).then(function (data) {
                 if (data && data.data && data.data.OrderDTODataList) {
@@ -340,6 +365,7 @@
             };
         },
         getResignTokens: function() {
+            var me = this;
             return ajax(
                 'https://kyfw.12306.cn/otn/confirmPassenger/initGc', 
                 {
@@ -354,14 +380,22 @@
                         data.match(/globalRepeatSubmitToken[^']*'([\w]*)'/)[1];
                     key_change =
                         data.match(/key_check_isChange':'([\w]*)'/)[1];
-                } catch (e) {
+                } catch (e) {}
+                me._setToken(token, key_change);
+                if (data.indexOf('dynamicJs') !== -1) {
+                    return me._getLoginKeyFormData(data);
                 }
-                return $.Deferred().resolve(token, key_change);
             });
         },
-        confirmResignForQueue: function(ps, oldps,
-                code, leftTicketStr,
-                token, keyChange, train_location) {
+        _setToken: function (token, keyChange) {
+            this.submitToken = token;
+            this.keyChange = keyChange;
+        }, 
+        confirmResignForQueue: function(
+                ps, oldps,
+                code, leftTicketStr, train_location
+        ) {
+            var me = this;
             return ajax(
                 'https://kyfw.12306.cn/otn/confirmPassenger' 
                     + '/confirmResignForQueue', 
@@ -370,11 +404,11 @@
                         passengerTicketStr: ps,
                         oldPassengerStr: oldps,
                         randCode: code,
-                        key_check_isChange: keyChange,
+                        key_check_isChange: me.keyChange,
                         leftTicketStr: leftTicketStr,
                         purpose_codes: '00',
                         train_location: train_location,
-                        REPEAT_SUBMIT_TOKEN: token,
+                        REPEAT_SUBMIT_TOKEN: me.submitToken,
                         _json_att: ''
                     }
                 }

@@ -65,7 +65,6 @@
                     }
                 }
                 var item=v[iter.shift()];
-                console.log(item);
                 back(item);
             });
         },
@@ -95,7 +94,6 @@
                 back = $.noop;
             }
             chrome.storage.sync.get(function(items) {
-                console.log(items);
                 back(items);
             });
         },

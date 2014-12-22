@@ -285,8 +285,8 @@ $(function() {
         },
         loadMyPassengers: function() {
             log('获取已存乘客..');
-            R.getTokens().then(function (token) {
-                return R.getMyPassengers(token);
+            R.getTokens().then(function () {
+                return R.getMyPassengers();
             }).done(function (data) {
                 log('获取已存乘客成功');
                 var options = $('#old_p').empty();
@@ -378,10 +378,7 @@ $(function() {
         loadAvailableTickets: function() {
             var container = $('#tickets');
             container.empty();
-            R.getTictets(function(data) {
-                if (!data) {
-                    return;
-                }
+            return R.getTictets().done(function (data) {
                 $.each(data, function() {
                     $.each(this['tickets'], function() {
                         var t = this;
@@ -401,6 +398,8 @@ $(function() {
                         $.data(container.find('option:last').get(0), 'ticket', t);
                     });
                 });
+            }).fail(function () {
+                log('load tickets fail..');
             });
         },
         addTicketToResign: function() {
@@ -474,8 +473,6 @@ $(function() {
         item: null,
         itemType: 'yz',
         tour_flag: "dc",
-        token: null,
-        keyChange: null,
         isStu: false,
         _query: function () {
             var me = this;
@@ -567,20 +564,19 @@ $(function() {
             });
             return theTrain;
         },
-        initDc: function(item) {
-            return this._submitOrderRequest(item, 'dc', R.getTokens);
+        initDc: function() {
+            return this._submitOrderRequest('dc', R.getTokens);
         },
-        _submitOrderRequest: function(item, tour_flag, tokenGetter) {
+        _submitOrderRequest: function(tour_flag, tokenGetter) {
             var me = this;
+            var item = me.item;
             return R.submitOrderRequest(item, tour_flag, me.isStu)
                 .then(function () {
                     return tokenGetter.call(R);
-                }).done(function (token, keyChange) {
+                }).done(function () {
                     newcode(2);
                     alarm.show();
-                    me.token = token;
-                    me.keyChange = keyChange;
-                    log('token: %0 keyChange: %1', token, keyChange);
+                    log('token: %0 keyChange: %1', R.submitToken, R.keyChange);
                     log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
                 }).fail(function () {
                     log('fail..');
@@ -642,12 +638,11 @@ $(function() {
             log('ps:' + ps);
             log('oldPs:' + oldps);
 
-            return R.checkOrderInfo(ps, oldps, ocode, that.token, tour_flag)
+            return R.checkOrderInfo(ps, oldps, ocode, tour_flag)
                 .then(function () {
                 return R.confirmSingleForQueue(
                     ps, oldps,
                     ocode, item['queryLeftNewDTO']['yp_info'],
-                    that.token, that.keyChange,
                     item['queryLeftNewDTO']['location_code']
                 );
             });
@@ -657,35 +652,16 @@ $(function() {
     //改签
     $.extend(grabber, {
         initGc: function(back) {
-            var that = this;
-            var tickets = that.getTickets();
-            if (tickets.length == 0) {
+            var me = this;
+            var tickets = me.getTickets();
+            if (!tickets.length) {
                 log('请选择需要改签的车票！');
-                back();
-                return;
+                return $.Deferred().reject().promise();
             }
-            var Q = Queue();
-            Q.next();
-            Q.step(function() {
-                R.getTictets(function(data) {
-                    if (data) {
-                        Q.next();
-                    } else {
-                        back();
-                    }
-                });
-            });
-            Q.step(function() {
-                R.resginTicket(tickets, function(rt) {
-                    if (rt) {
-                        Q.next();
-                    } else {
-                        back();
-                    }
-                });
-            });
-            Q.step(function() {
-                that._submitOrderRequest('gc', R.getResignTokens, back);
+            return R.getTictets().then(function () {
+                return R.resginTicket(tickets);
+            }).then(function () {
+                return me._submitOrderRequest('gc', R.getResignTokens);
             });
         },
         getTickets: function() {
@@ -706,33 +682,27 @@ $(function() {
             });
             return this._getPassengers(passengerDTOs, types, t);
         },
-        _submitResignOrder: function(ocode, back) {
-            var that = this;
-
+        _submitResignOrder: function(ocode) {
+            var me = this;
             var tour_flag = 'gc';
-            var passengers = that.getResignPassengers();
-            if (passengers.length == 0) {
+            var passengers = me.getResignPassengers();
+            if (!passengers.length) {
                 log('请选择乘客！');
-                back(false);
-                return;
+                return $.Deferred().reject().promise();
             }
-            var item = that.item,
-                ps = passengers['ps'],
-                oldps = passengers['oldps'];
+            var item = me.item;
+            var ps = passengers['ps'];
+            var oldps = passengers['oldps'];
             log('ps:' + ps);
             log('oldPs:' + oldps);
-            R.checkOrderInfo(ps, oldps, ocode, that.token, tour_flag, function(rt) {
-                if (rt) {
-                    R.confirmResignForQueue(ps, oldps,
-                        ocode, item['queryLeftNewDTO']['yp_info'],
-                        that.token, that.keyChange,
-                        item['queryLeftNewDTO']['location_code'],
-                        function(rt) {
-                            back(rt);
-                        });
-                } else {
-                    back(false);
-                }
+
+            return R.checkOrderInfo(ps, oldps, ocode, tour_flag)
+                .then(function () {
+                return R.confirmResignForQueue(
+                    ps, oldps,
+                    ocode, item['queryLeftNewDTO']['yp_info'],
+                    item['queryLeftNewDTO']['location_code']
+                );
             });
         }
     });
@@ -747,7 +717,7 @@ $(function() {
                 window.GET_TRAIN_TIME = new Date().getTime();
                 that.item = item;
                 var next = that.tour_flag == 'dc' ? that.initDc : that.initGc;
-                next.call(that, item).always(function () {
+                next.call(that).always(function () {
                     that.r.stop();
                     that.r.isStopped();
                 });
