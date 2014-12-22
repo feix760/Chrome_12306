@@ -3,13 +3,16 @@
 
     var ajax = function(url, settings) {
         settings.headers = $.extend({
-            _$Origin: 'https://kyfw.12306.cn',
+            '_$Origin': 'https://kyfw.12306.cn',
             '_$X-Requested-With': 'XMLHttpRequest'
         }, settings.headers || {});
         return $.ajax(url, settings).then(
             function (data, status, jqXhr) {
                 var html = jqXhr.responseText;
                 return $.Deferred().resolve(data, html, jqXhr.status, jqXhr);
+            }, 
+            function (jqXhr) {
+                return $.Deferred().reject([null, null, jqXhr.status, jqXhr]);
             }
         );
     };
@@ -55,6 +58,8 @@
                     dataType: 'html'
                 }
             ).then(function (data) {
+                var match = data.match(/var CLeftTicketUrl = '([^']+)'/);
+                me.queryUrl = match ? match[1] : me.queryUrl;
                 return me._getLoginKeyFormData(data);
             });
         }, 
@@ -151,29 +156,22 @@
         query: function(from, to, date, isStudent) {
             var me = this;
             var purpose_codes = isStudent ? '0X00' : 'ADULT';
-            var data = 'leftTicketDTO.train_date=' + date 
+            var params = 'leftTicketDTO.train_date=' + date 
                 + '&leftTicketDTO.from_station=' + from 
                 + '&leftTicketDTO.to_station=' + to 
                 + '&purpose_codes=' + purpose_codes;
-            var urls = [
-                'https://kyfw.12306.cn/otn/leftTicket/query', 
-                'https://kyfw.12306.cn/otn/leftTicket/queryT'
-            ];
-            me.queryUrl = me.queryUrl || urls[0];
-            var req = function (url) {
-                return ajax(url, {data: data}).then(function (data, text) {
-                    if (data && data.data) {
-                        return data.data;
-                    } else {
-                        return $.Deferred().reject();
-                    }
-                });
-            };
-            return req(me.queryUrl).then(function (data) {
-                return data;
-            }, function (args) {
-                me.queryUrl = me.queryUrl === urls[0] ? urls[1] : urls[0];
-                return req(me.queryUrl);
+            me.queryUrl = me.queryUrl || 'leftTicket/queryT';
+            return ajax(
+                'https://kyfw.12306.cn/otn/' + me.queryUrl, 
+                {
+                    data: params
+                }
+            ).then(function (data) {
+                if (data && data.data) {
+                    return data.data;
+                } else {
+                    return $.Deferred().reject(arguments);
+                }
             });
         },
         getQueueCount: function (item, seatType) {
