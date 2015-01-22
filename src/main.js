@@ -134,6 +134,7 @@ $(function() {
             that.audio.load();
             that.audio.play();
             $('.alarm_switch').text('关闭声音');
+            that._alertTitle();
         },
         alert: function () {
             var that = alarm;
@@ -141,6 +142,7 @@ $(function() {
             that.alertAudio.load();
             that.alertAudio.play();
             $('.alarm_switch').text('关闭声音');
+            that._alertTitle();
         }, 
         hide: function() {
             var that = alarm;
@@ -148,6 +150,7 @@ $(function() {
             that.audio.pause();
             that.alertAudio.pause();
             $('.alarm_switch').text('试听声音');
+            that._cancleAlertTitle();
         },
         _switch: function() {
             if (alarm.view.css('display') == 'block') {
@@ -155,7 +158,26 @@ $(function() {
             } else {
                 alarm.show();
             }
+        }, 
+        _alertTitle: function() {
+            this._titleBack = document.title; 
+            var title = ''; 
+            this._alertTitleInterval = setInterval(function() {
+                title = title.indexOf('*') === -1
+                    ? '****'
+                    : ''; 
+                title = title + Math.random().toString().substr(2);
+                document.title = title; 
+            }, 150);
+        },
+        _cancleAlertTitle: function() {
+            if (this._alertTitleInterval) {
+                clearInterval(this._alertTitleInterval);
+                this._alertTitleInterval = null;
+                document.title = this._titleBack;
+            }
         }
+        
     };
     $(document).on('click', '.alarm_show', alarm.show);
     $(document).on('click', '.alarm_hide', alarm.hide);

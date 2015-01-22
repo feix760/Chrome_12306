@@ -178,7 +178,11 @@
             return ajax(
                 'https://kyfw.12306.cn/otn/' + me.queryUrl, 
                 {
-                    data: params
+                    data: params,
+                    headers: {
+                        '_$If-Modified-Since': 0,
+                        '_$Referer': 'https://kyfw.12306.cn/otn/leftTicket/init'
+                    }
                 }
             ).then(function (data) {
                 if (data && data.data) {
