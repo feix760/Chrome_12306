@@ -86,41 +86,49 @@ $(function() {
 
 //checkcode
 $(function() {
-    $(document).on('click', '.checkcode_hint', function() {
-        $(this).next('.checkcode').trigger('click');
-    });
-    $(document).on('click', '.checkcode', function() {
-        var jthis = $(this),
-            s = this.src;
-        s = s.replace(/\&[^&]*$/, '');
-        s = s + '&' + new Date().getTime();
-        var hint = jthis.prev('.checkcode_hint');
-        if (hint.length == 0) {
-            hint = $('<span class="checkcode_hint"></span>');
-            jthis.before(hint);
-        }
-        hint.text('加载中..').show();
-        jthis.hide();
-        jthis.unbind('load').bind('load', function() {
-            jthis.show();
-            hint.hide();
+    $(document).on('click', '.checkcode-new', function() {
+        var $wrap = $(this).parent();
+        var $img = $wrap.find('img');
+        $img.unbind('load').bind('load', function() {
+            $wrap.removeClass('loading');
         });
-        jthis.unbind('error').bind('error', function() {
-            hint.text('加载错误！');
-        });
-        jthis.get(0).src = s;
+        $wrap.addClass('loading');
+        $img[0].src = $img[0].src.replace(/\&[^&]*$/, '') + '&' + (+new Date());
     });
     window.newcode = function(id) {
-        if (!id) {
-            id = '1';
-        }
-        $('.checkcode' + id).trigger('click');
-        $('.code' + id).val('')[0].focus();
+        id = id || 1;
+        $('.checkcode' + id).nextAll('.checkcode-new').trigger('click');
     };
-    newcode();
-    setTimeout(function() {
-
-    }, 20);
+    window.getCode = function(id) {
+        id = id || 1;
+        var $wrap = $('.checkcode' + id).parent();
+        var selects = [];
+        $wrap.find('.checkcode-select.select').each(function() {
+            var i = $(this).data('index');
+            selects.push((i % 4) * 71 + 30);
+            selects.push(parseInt(i / 4) * 71 + 30);
+        });
+        return selects;
+    };
+    $(document).on('click', '.checkcode-select', function(e) {
+        $(e.target).toggleClass('select');
+    });
+    function init() {
+        $('.checkcode').each(function() {
+            var $wrap = $(this).parent();
+            $('<div class="checkcode-new"></div>').appendTo($wrap);
+            for (var i = 0; i < 8; i++) {
+                $('<div class="checkcode-select"></div>')
+                    .css({
+                        top: parseInt(i / 4) * 71 + 40,
+                        left: (i % 4) * 71 + 5
+                    })
+                    .data('index', i)
+                    .appendTo($wrap);
+            }
+        });
+    }
+    init();
 });
 //alarm
 $(function() {
@@ -339,12 +347,11 @@ $(function() {
             });
         },
         autoSubmitOrder: function() {
-            var ipt = $("#order_code"),
-                code = ipt.val();
-            if (code.length != 4 || ipt.attr('_last_code') == code) {
+            var ipt = getCode(2);
+            var code = ipt.join(',');
+            if (ipt.length) {
                 return;
             }
-            ipt.attr('_last_code', code);
             log('验证验证码： ' + code + " 中...");
             R.checkRandCode(2, code).done(function () {
                 alarm.hide();
@@ -362,9 +369,9 @@ $(function() {
             });
         },
         login: function() {
-            var user = $.trim($('#user').val()),
-                pwd = $.trim($('#pwd').val()),
-                code = $.trim($('#login_code').val());
+            var user = $.trim($('#user').val());
+            var pwd = $.trim($('#pwd').val());
+            var code = getCode(1).join(',');
             log('登陆中..');
             R.login(user, pwd, code).done(function () {
                 log('登陆成功');
@@ -380,8 +387,6 @@ $(function() {
     $('.add_train').click($.proxy(interact, 'addTrain'));
     $('.new_p_add').click($.proxy(interact, 'addNewPassenger'));
     $('.old_p_add').click($.proxy(interact, 'addOldPassenger'));
-    $('#order_code').bind('keyup change', interact.autoSubmitOrder);
-
 
     $('.login').click($.proxy(interact, 'login'));
     $('.logout').click($.proxy(interact, 'logout'));
@@ -712,7 +717,7 @@ $(function() {
             return R.getTictets().then(function () {
                 return R.resginTicket(tickets);
             }).then(function () {
-                return me._submitOrderRequest('gc', R.getResignTokens);
+                return me._submitOrderRequest(R.getResignTokens);
             });
         },
         getTickets: function() {

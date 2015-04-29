@@ -93,12 +93,14 @@
             ).then(function (data) {
                 var key;
                 var subUrl;
+                var match;
                 try {
-                    key = data.match(/\{var key='(\w+)'/)[1];
-                    var match = data
-                        .match(/ready[\s\S]{1,100}'\/otn\/dynamicJs\/(\w+)'/);
+                    match = data.match(/\/otn\/dynamicJs\/(\w+)'/);
+                    key = data.match(/function\s*gc\s*\(\)[^=]*=\s*['"](\w+)['"]/)[1];
                     subUrl = match ? match[1] : null;
                 } catch (e) {}
+                console.log(key);
+                console.log(match);
                 var keyVlues = [key, '1111'];
                 me._loginKey = {};
                 me._loginKey[key] = 

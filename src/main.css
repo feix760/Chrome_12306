@@ -23,14 +23,41 @@ input[type=text], input[type=password] {
     min-width: 55px;
     text-align: right
 }
-.checkcode, .checkcode_hint {
-    display: inline-block;
-    width: 75px;
-    height: 25px;
-    vertical-align: middle;
-    cursor: pointer
+.checkcode-container {
+    float: left;
+    width: 300px;
 }
-div {
+.checkcode-wrap {
+    position: relative;
+    margin: 0;
+}
+.checkcode-wrap.loading img {
+    visibility: hidden;
+}
+.checkcode-new {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    cursor: pointer;
+}
+.checkcode-select {
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    cursor: pointer;
+}
+.checkcode-select.select {
+    border:1px solid blue;
+}
+.checkcode {
+    display: block;
+    width: 293px;
+    height: 190px;
+    cursor: pointer;
+}
+body > div {
     margin-top: 4px
 }
 body #ui-datepicker-div {

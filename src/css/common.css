@@ -54,5 +54,13 @@ h5{
     font-size:1.1em;
 }
 
+.clearfix:before,
+.clearfix:after {
+    content: " ";
+    display: block;
+    clear: both;
+    height: 0;
+    visibility: hidden;
+}
 
 
