@@ -10,7 +10,7 @@ function ajax(url, settings) {
                 resolve(data);
             }, 
             function (jqXhr) {
-                reject(jqXhr);
+                reject(jqXhr.responseText || jqXhr.status);
             }
         )
     });
@@ -124,7 +124,6 @@ R.query = function(from, to, date, isStudent) {
 };
 
 R.getQueueCount = function (item, seatType) {
-    var me = this;
     var trainInfo = item.queryLeftNewDTO;
     return ajax(
         'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount', 
@@ -139,7 +138,7 @@ R.getQueueCount = function (item, seatType) {
                 leftTicket: trainInfo.yp_info, 
                 purpose_codes: '00', 
                 _json_att: '', 
-                REPEAT_SUBMIT_TOKEN: me.submitToken
+                REPEAT_SUBMIT_TOKEN: context.submitToken
             }, 
             type: 'post'
         }
@@ -147,7 +146,7 @@ R.getQueueCount = function (item, seatType) {
         if (data && data.data) {
             return data.data;
         } else {
-            return $.Deferred().reject();
+            return Promise.reject(data);
         }
     });
 }; 
@@ -177,7 +176,7 @@ R.submitOrderRequest = function(item, tour_flag, isStu) {
         }
     ).then(function (data) {
         if (!(data && data.status && data.data === 'N')) {
-            return Promise.reject();
+            return Promise.reject(data);
         }
     });
 };
@@ -261,7 +260,7 @@ R.confirmSingleForQueue = function(ps, oldps, code, item) {
         }
     ).then(function (data) {
         if (!(data && data.data && data.data.submitStatus)) {
-            return Promise.reject();
+            return Promise.reject(data);
         }
     });
 };
@@ -340,7 +339,6 @@ function _getResginTicketsData(tickets) {
 }
 
 R.confirmResignForQueue = function(ps, oldps, code, item) {
-    var me = this;
     return ajax(
         'https://kyfw.12306.cn/otn/confirmPassenger' 
             + '/confirmResignForQueue', 
@@ -349,13 +347,13 @@ R.confirmResignForQueue = function(ps, oldps, code, item) {
                 passengerTicketStr: ps,
                 oldPassengerStr: oldps,
                 randCode: code,
-                key_check_isChange: me.keyChange,
+                key_check_isChange: context.keyChange,
                 purpose_codes: '00',
                 leftTicketStr: item.queryLeftNewDTO.yp_info,
                 train_location: item.queryLeftNewDTO.location_code,
                 roomType: '00',
                 dwAll: 'N',
-                REPEAT_SUBMIT_TOKEN: me.submitToken,
+                REPEAT_SUBMIT_TOKEN: context.submitToken,
                 _json_att: ''
             }
         }

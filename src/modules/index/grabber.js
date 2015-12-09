@@ -73,17 +73,22 @@ var queryForOneAvailableItem = function(inputInfo) {
         inputInfo.from, inputInfo.to, inputInfo.date, context.isStu
     ).then(function (data) {
         var availableItem = null;
+        var loged = {};
         $.each(inputInfo.trains, function(i, trainItem) {
             var item = findTrainItem(data, trainItem.no);
             if (item) {
                 var info = item['queryLeftNewDTO'];
-                log('%0：%1', info['station_train_code'], item['buttonTextInfo']);
+                if (!loged[trainItem.no]) {
+                    log('%0：%1', info.station_train_code, item.buttonTextInfo);
+                }
                 if (item['buttonTextInfo'] == '预订') {
-                    log(
-                        '硬座：%0 无座：%1 硬卧：%2 二等座：%3 一等座：%4', 
-                        info.yz_num, info.wz_num, 
-                        info.yw_num, info.ze_num, info.zy_num
-                    );
+                    if (!loged[trainItem.no]) {
+                        log(
+                            '硬座：%0 无座：%1 硬卧：%2 二等座：%3 一等座：%4', 
+                            info.yz_num, info.wz_num, 
+                            info.yw_num, info.ze_num, info.zy_num
+                        );
+                    }
                     var seatKey = trainItem.type + '_num';
                     if (info[seatKey] 
                         && info[seatKey] != '无' 
@@ -94,6 +99,7 @@ var queryForOneAvailableItem = function(inputInfo) {
                     }
                 }
             }
+            loged[trainItem.no] = true;
             return true;
         });
         if (availableItem) {
@@ -209,6 +215,9 @@ var query = function() {
         getTrainTime = +new Date();
         return getOrderCheckcode();
     })
+    //.then(function() {
+        //return R.getQueueCount(context.item, seatType);
+    //})
     .then(function(code) {
         var passengers = getPassengers();
         if (!passengers.length) {
@@ -230,18 +239,15 @@ var query = function() {
         );
     })
     .then(function() {
+        stop();
         log(
             '提交订单成功，耗时: %0s，请点击查看订单前往12306完成付款。', 
             ((+new Date() - getTrainTime) / 1000).toFixed(3)
         );
-        stop();
     })
     .catch(function(err) {
-        console.log(err);
-    })
-    .then(null, function() {
         stop();
-        console.log(arguments);
+        log(err);
     });
 };
 

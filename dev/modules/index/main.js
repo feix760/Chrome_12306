@@ -205,7 +205,7 @@ define('modules/index/main', function(require, exports, module) {
   }, 1000);
   
   function checkUser() {
-      var interval = 5000;
+      var interval = 10000;
       R.checkUser().then(function() {
           $('.login').text('已登录').removeClass('nologin');
           setTimeout(checkUser, interval);
