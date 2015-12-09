@@ -2,30 +2,11 @@
 <!DOCTYPE html>
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <link  href="css/jquery-ui-1.10.3.css" rel="stylesheet" />
-    <link  href="css/common.css" rel="stylesheet" />
-    <link  href="main.css" rel="stylesheet" />
-    <script src="js/jquery-2.0.3.min.js" ></script>
-    <script src="js/moment.js" ></script>
-    <script src="js/template.js" ></script>
-    <script src="js/jquery-ui-1.10.3.min.js" ></script>
-    <script src="js/jquery.ui.autocomplete.js" ></script>
-    <script src="js/jquery.ui.datepicker-zh-CN.js" ></script>
-    <script src="js/lib.js" ></script>
-    <script src="js/station_name.js" ></script>
-    <script src="Chrome.js" ></script>
-    <script src="REST.js" ></script>
-    <script src="main.js" ></script>
+    <title>12306抢票</title>
 
-    <title></title>
-    <style>
-        .switch_from_to{
-            cursor: pointer;
-        }
-        .resign{
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="/modules/css/jquery-ui-1.10.3.css" />
+    <link rel="stylesheet" href="/modules/css/common.css" />
+    <link rel="stylesheet" href="/pages/index/main.css" />
 </head>
 <body>
     <div>
@@ -50,9 +31,6 @@
         <select id="available_trains">
 
         </select>
-        <script type="text/html" id="available_train_item">
-            <option value="{{train}}">{{train}}</option>
-        </script>
         <select id="available_train_type">
             <option value="yz">硬座</option>
             <option value="wz">无座</option>
@@ -61,14 +39,7 @@
             <option value="zy">一等座</option>
         </select>
         <button type="button" class="add_train">添加</button>
-        <span id="trains_list" class="items_list">
-            <script id="train_item" type="text/html">
-                <span class="item" _train="{{train}}" _type="{{type}}">
-                <span class="hint">{{train}}-{{typeName}}</span>
-                <button class="delete_item" type="button">删除</button>
-                </span>
-            </script>
-        </span>
+        <span id="trains_list" class="items_list"></span>
     </div>
     <div class="noresign">
         <span class="title">添加乘客:</span>
@@ -76,9 +47,6 @@
         <select id="old_p">
 
         </select>
-        <script id="t_old_p" type="text/html">
-            <option value="{{id}}" _id="{{id}}" _name="{{name}}" _type="{{type}}">{{name}}</option>
-        </script>
         <select id="old_p_type">
             <option value="1">成人票</option>
             <option value="3">学生票</option>
@@ -88,35 +56,18 @@
     </div>
     <div  class="noresign">
         <span class="title">车票乘客：</span>
-        <span id="passenger_list" class="items_list">
-            <script id="t_passenger" type="text/html">
-                <span class="item" _name="{{name}}" _id="{{id}}" _type="{{type}}" _oldType="{{oldType}}">
-                <span class="hint">{{name}},{{id}},{{typeName}}</span>
-                <button class="delete_item" type="button">删除</button>
-                </span>
-            </script>
-        </span>
+        <span id="passenger_list" class="items_list"></span>
     </div>
 
     <div class="resign">
         <span class="title">可改签车票:</span>
         <select id="tickets">
-
         </select>
-        <script id="t_available_ticket" type="text/html">
-            <option>{{date}},{{train}},{{from}}-{{to}},{{name}},{{id}},{{type}},{{seatName}}</option>
-        </script>
         <button type="button" class="resign_add">添加</button>
     </div>
     <div  class="resign">
         <span class="title">改签车票：</span>
         <span id="resign_tickets" class="items_list">
-            <script id="t_ticket_to_resign" type="text/html">
-                <span class="item">
-                <span class="hint">{{date}},{{train}},{{from}}-{{to}},{{name}},{{id}},{{type}},{{seatName}}</span>
-                <button class="delete_item" type="button">删除</button>
-                </span>
-            </script>
         </span>
     </div>
     <div id="time">&nbsp;</div>
@@ -128,7 +79,7 @@
             </div>
         </div>
         <div class="checkcode-container">
-            <div>验证码2:</div>
+            <div>验证码2: <button type="button" class="submit-order">提交</button></div>
             <div class="checkcode-wrap">
                 <img class="checkcode checkcode2"
              src="https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp&"/>
@@ -157,9 +108,33 @@
         <br>4、可以结合使用cookie隔离器插件，登陆多个账号；
     </div>
     <div id="alarm">
-        <audio id="alarm_audio" src="alarm.wav" loop="loop" ></audio>
-        <audio id="alarm_alert_audio" src="alert.wav" loop="loop" ></audio>
+        <audio id="alarm_audio" src="/modules/index/res/alarm.wav" loop="loop" ></audio>
+        <audio id="alarm_alert_audio" src="/modules/index/res/alert.wav" loop="loop" ></audio>
     </div>
 
+<script src="/modules/lib/mod.js"></script>
+<script type="text/javascript" src="/modules/lib/jquery.min.js"></script>
+<script type="text/javascript" src="/modules/lib/jquery.ui.min.js"></script>
+<script type="text/javascript" src="/modules/lib/jquery.ui.autocomplete.js"></script>
+<script type="text/javascript" src="/modules/lib/jquery.ui.datepicker.js"></script>
+<script type="text/javascript" src="/modules/lib/moment.js"></script>
+<script type="text/javascript" src="/modules/common/lib.js"></script>
+<script type="text/javascript" src="/modules/common/station_name.js"></script>
+<script type="text/javascript" src="/modules/index/log.js"></script>
+<script type="text/javascript" src="/modules/common/Chrome.js"></script>
+<script type="text/javascript" src="/modules/index/autosave.js"></script>
+<script type="text/javascript" src="/modules/index/checkcode.js"></script>
+<script type="text/javascript" src="/modules/index/alarm.js"></script>
+<script type="text/javascript" src="/modules/index/rest.js"></script>
+<script type="text/javascript" src="/modules/index/grabber.js"></script>
+<script type="text/javascript" src="/modules/index/tpl/trainOption.tpl.js"></script>
+<script type="text/javascript" src="/modules/index/tpl/trainItem.tpl.js"></script>
+<script type="text/javascript" src="/modules/index/tpl/passenger.tpl.js"></script>
+<script type="text/javascript" src="/modules/index/tpl/passengerOpt.tpl.js"></script>
+<script type="text/javascript" src="/modules/index/tpl/availableTicket.tpl.js"></script>
+<script type="text/javascript" src="/modules/index/tpl/ticketResign.tpl.js"></script>
+<script type="text/javascript" src="/modules/index/main.js"></script>
+<script src="/pages/index/main.js"></script>
 </body>
 </html>
+

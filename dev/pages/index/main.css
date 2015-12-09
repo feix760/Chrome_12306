@@ -25,7 +25,8 @@ input[type=text], input[type=password] {
 }
 .checkcode-container {
     float: left;
-    width: 300px;
+    width: 293px;
+    margin-right: 10px;
 }
 .checkcode-wrap {
     position: relative;
@@ -41,15 +42,23 @@ input[type=text], input[type=password] {
     right: 0;
     height: 30px;
     cursor: pointer;
+    box-sizing: border-box;
+}
+.checkcode-click {
+    position: absolute;
+    top: 40px;
+    left: 5px;
+    right: 5px;
+    bottom: 9px;
+    cursor: pointer;
+    -webkit-user-select: none;
 }
 .checkcode-select {
     position: absolute;
-    width: 68px;
-    height: 68px;
+    width: 28px;
+    height: 28px;
     cursor: pointer;
-}
-.checkcode-select.select {
-    border:1px solid blue;
+    border: 2px solid red;
 }
 .checkcode {
     display: block;
@@ -117,4 +126,10 @@ body #ui-datepicker-div {
 .hint {
     color: red;
     font-size: 1em
+}
+.switch_from_to{
+    cursor: pointer;
+}
+.resign{
+    display: none;
 }
