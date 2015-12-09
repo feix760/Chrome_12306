@@ -42,9 +42,6 @@ define('modules/index/main', function(require, exports, module) {
       }
       var trains = $('#available_trains'),
           $data = from + '_' + to + '_' + date;
-      if (trains.attr('_data') == $data) {
-          return;
-      }
       trains.attr('_data', $data);
   
       log('获取列车列表..');
@@ -139,7 +136,7 @@ define('modules/index/main', function(require, exports, module) {
   
   var logout = function() {
       log('退出登陆中..');
-      R.logout.then(function() {
+      R.logout().then(function() {
           log('退出登陆成功！');
           checkcode.reset(1);
       });
@@ -151,9 +148,12 @@ define('modules/index/main', function(require, exports, module) {
       var code = checkcode.get(1).join(',');
       log('登陆中..');
       R.login(user, pwd, code).then(function() {
+          loadMyPassengers();
+          checkUser();
           log('登陆成功');
       }, function() {
           log('登陆失败！');
+          checkcode.reset();
       });
   }
   
@@ -193,6 +193,8 @@ define('modules/index/main', function(require, exports, module) {
   
   $('.login').click(login);
   $('.logout').click(logout);
+  $('.refresh_train').click(loadAvailableTrains);
+  $('.refresh_p').click(loadMyPassengers);
   
   $('.query').click(grabber.query.bind(grabber));
   $('.stop_query').click(grabber.stop.bind(grabber));
@@ -201,6 +203,24 @@ define('modules/index/main', function(require, exports, module) {
       loadAvailableTrains();
       loadMyPassengers();
   }, 1000);
+  
+  function checkUser() {
+      var interval = 5000;
+      R.checkUser().then(function() {
+          $('.login').text('已登录').removeClass('nologin');
+          setTimeout(checkUser, interval);
+      }, function() {
+          $('.login').text('请登录').addClass('nologin');
+          setTimeout(checkUser, interval);
+      });
+  }
+  
+  checkUser();
+  
+  document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      $(document).trigger('submit_action');
+  }, false);
   
   
 

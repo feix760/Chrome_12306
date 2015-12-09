@@ -105,6 +105,7 @@ define('modules/index/grabber', function(require, exports, module) {
           }
       }, function() {
           log('query fail');
+          return Promise.reject();
       });
   
   };
@@ -124,7 +125,7 @@ define('modules/index/grabber', function(require, exports, module) {
   
   var getOrderCheckcode = function() {
       return new Promise(function(resolve, reject) {
-          $('.submit-order').unbind('click').click(function() {
+          function check() {
               var code = checkcode.get(2).join(',');
               if (!code) {
                   return;
@@ -138,7 +139,8 @@ define('modules/index/grabber', function(require, exports, module) {
                   checkcode.reset(2);
                   log('验证码： ' + code + " 错误！");
               });
-          });
+          }
+          $('.submit-order').unbind('click').click(check);
       });
   };
   
@@ -242,7 +244,6 @@ define('modules/index/grabber', function(require, exports, module) {
       .then(null, function() {
           stop();
           console.log(arguments);
-      
       });
   };
   

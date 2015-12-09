@@ -103,6 +103,7 @@ var queryForOneAvailableItem = function(inputInfo) {
         }
     }, function() {
         log('query fail');
+        return Promise.reject();
     });
 
 };
@@ -122,7 +123,7 @@ var findTrainItem = function(data, name) {
 
 var getOrderCheckcode = function() {
     return new Promise(function(resolve, reject) {
-        $('.submit-order').unbind('click').click(function() {
+        function check() {
             var code = checkcode.get(2).join(',');
             if (!code) {
                 return;
@@ -136,7 +137,8 @@ var getOrderCheckcode = function() {
                 checkcode.reset(2);
                 log('验证码： ' + code + " 错误！");
             });
-        });
+        }
+        $('.submit-order').unbind('click').click(check);
     });
 };
 
@@ -240,7 +242,6 @@ var query = function() {
     .then(null, function() {
         stop();
         console.log(arguments);
-    
     });
 };
 

@@ -1,5 +1,10 @@
 body {
-    padding: 10px 15px
+    padding: 10px 15px;
+    width: 800px;
+}
+.nologin {
+    background: green;
+    color: #fff;
 }
 .log_wrapper {
     border: 1px solid #aaa;

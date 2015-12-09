@@ -56,7 +56,7 @@ R.checkUser = function () {
         }
     ).then(function (data) {
         if (!data || !data.data || !data.data.flag) {
-            return $.Deferred().reject(arguments).promise();
+            return Promise.reject(data);
         }
     });
 }; 
@@ -75,7 +75,7 @@ R.login = function(user, pwd, code) {
             }
         ).then(function (data) {
             if (!(data && data.data && data.data.loginCheck === 'Y')) {
-                return $.Deferred().reject(arguments);
+                return Promise.reject(data);
             }
         });
     });
@@ -236,7 +236,7 @@ R.checkOrderInfo = function(ps, oldps, code, tour_flag) {
         }
     ).then(function (data) {
         if (!(data && data.data && data.data.submitStatus)) {
-            return $.Deferred().reject(arguments);
+            return Promise.reject(data);
         }
     });
 };
@@ -294,7 +294,7 @@ R.getTictets = function(start, end) {
         if (data && data.data && data.data.OrderDTODataList) {
             return data.data.OrderDTODataList;
         } else {
-            return $.Deferred().reject(arguments);
+            return Promise.reject(data);
         }
     });
 };
@@ -312,7 +312,7 @@ R.resginTicket = function(tickets) {
         }
     ).then(function (data) {
         if (!(data && data.data && data.data.existError === 'N')) {
-            return $.Deferred().reject(arguments);
+            return Promise.reject(data);
         }
     });
 };
@@ -339,30 +339,6 @@ function _getResginTicketsData(tickets) {
     };
 }
 
-R.getResignTokens = function() {
-    var me = this;
-    return ajax(
-        'https://kyfw.12306.cn/otn/confirmPassenger/initGc', 
-        {
-            cache: false,
-            type: 'get'
-        }
-    ).then(function (data) {
-        var token = null;
-        var key_change = null;
-        try {
-            token =
-                data.match(/globalRepeatSubmitToken[^']*'([\w]*)'/)[1];
-            key_change =
-                data.match(/key_check_isChange':'([\w]*)'/)[1];
-        } catch (e) {}
-        me._setToken(token, key_change);
-        if (data.indexOf('dynamicJs') !== -1) {
-            return me._getLoginKeyFormData(data);
-        }
-    });
-};
-
 R.confirmResignForQueue = function(ps, oldps, code, item) {
     var me = this;
     return ajax(
@@ -385,7 +361,7 @@ R.confirmResignForQueue = function(ps, oldps, code, item) {
         }
     ).then(function (data) {
         if (!(data && data.data && data.data.submitStatus)) {
-            return $.Deferred().reject(arguments);
+            return Promise.reject(data);
         }
     });
 };

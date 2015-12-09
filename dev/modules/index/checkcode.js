@@ -27,9 +27,21 @@ define('modules/index/checkcode', function(require, exports, module) {
                   y: e.offsetY
               })
               .appendTo($e);
+          bindSubmit($e);
       });
   
+      function bindSubmit($e) {
+          $(document).unbind('submit_action').bind('submit_action', function() {
+               var dist = $e.closest('.checkcode-wrap').data('submit');
+               if (dist) {
+                  $(dist).trigger('click');
+               }
+          });
+      }
+  
       $(document).on('click', '.checkcode-select', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
           $(e.currentTarget).remove();
       });
   

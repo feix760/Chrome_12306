@@ -11,11 +11,9 @@
 <body>
     <div>
         <span class="title">用户名:</span>
-        <input type="text" value="" id="user"/>
+        <input type="text" value="" id="user" style="width: 120px;"/>
         <span class="title">密码:</span>
-        <input type="password" value="" id="pwd"/>
-        <button type="button" class="login">登录</button>
-        <button type="button" class="logout">退出登录</button>
+        <input type="password" value="" id="pwd" style="width: 160px;"/>
     </div>
     <div>
         <span class="title">发站:</span>
@@ -29,7 +27,6 @@
     <div id="trains">
         <span class="title">车次:</span>
         <select id="available_trains">
-
         </select>
         <select id="available_train_type">
             <option value="yz">硬座</option>
@@ -39,6 +36,7 @@
             <option value="zy">一等座</option>
         </select>
         <button type="button" class="add_train">添加</button>
+        <button type="button" class="refresh_train">刷新</button>
         <span id="trains_list" class="items_list"></span>
     </div>
     <div class="noresign">
@@ -53,6 +51,7 @@
             <option value="2">儿童票</option>
         </select>
         <button type="button" class="old_p_add">添加</button>
+        <button type="button" class="refresh_p">刷新</button>
     </div>
     <div  class="noresign">
         <span class="title">车票乘客：</span>
@@ -73,14 +72,17 @@
     <div id="time">&nbsp;</div>
     <div class="clearfix">
         <div class="checkcode-container">
-            <div>验证码1:</div>
-            <div class="checkcode-wrap">
+            <div>验证码1:
+                <button type="button" class="login">登录</button>
+                <button type="button" class="logout">退出登录</button>
+            </div>
+            <div class="checkcode-wrap" data-submit=".login">
                 <img class="checkcode checkcode1" src="https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=login&rand=sjrand&"/>
             </div>
         </div>
         <div class="checkcode-container">
             <div>验证码2: <button type="button" class="submit-order">提交</button></div>
-            <div class="checkcode-wrap">
+            <div class="checkcode-wrap" data-submit=".submit-order">
                 <img class="checkcode checkcode2"
              src="https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp&"/>
             </div>
