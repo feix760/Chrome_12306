@@ -217,10 +217,6 @@ define('modules/index/main', function(require, exports, module) {
   
   checkUser();
   
-  document.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      $(document).trigger('submit_action');
-  }, false);
   
   
 

@@ -14,7 +14,7 @@ define('modules/index/checkcode', function(require, exports, module) {
       });
   
       $(document).on('click', '.checkcode-click', function(e) {
-          var $e = $(e.currentTarget);
+          var $ele = $(e.currentTarget);
           var radius = 15;
           $('<div class="checkcode-select"></div>')
               .css({
@@ -26,18 +26,9 @@ define('modules/index/checkcode', function(require, exports, module) {
                   x: e.offsetX,
                   y: e.offsetY
               })
-              .appendTo($e);
-          bindSubmit($e);
+              .appendTo($ele);
+          $ele.data('lastclick', Date.now());
       });
-  
-      function bindSubmit($e) {
-          $(document).unbind('submit_action').bind('submit_action', function() {
-               var dist = $e.closest('.checkcode-wrap').data('submit');
-               if (dist) {
-                  $(dist).trigger('click');
-               }
-          });
-      }
   
       $(document).on('click', '.checkcode-select', function(e) {
           e.preventDefault();
@@ -49,7 +40,18 @@ define('modules/index/checkcode', function(require, exports, module) {
       $('.checkcode').each(function() {
           var $wrap = $(this).parent();
           $('<div class="checkcode-new"></div>').appendTo($wrap);
-          $('<div class="checkcode-click"></div>').appendTo($wrap);
+          $('<div class="checkcode-click"></div>')
+              .appendTo($wrap)
+              .bind('contextmenu', function(e) {
+                  e.preventDefault();
+                  var $ele = $(this),
+                      lastClick = $ele.data('lastclick') || 0,
+                      dist = $ele.closest('.checkcode-wrap').data('submit');
+                  if (lastClick && Date.now() - lastClick < 3000 && dist) {
+                      $(dist).trigger('click');
+                      $ele.data('lastclick', 0);
+                  }
+              });
       });
   };
   

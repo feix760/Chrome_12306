@@ -215,8 +215,4 @@ function checkUser() {
 
 checkUser();
 
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    $(document).trigger('submit_action');
-}, false);
 
