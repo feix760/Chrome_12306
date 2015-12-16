@@ -11,7 +11,8 @@ var context = {
     queryCount: 0,
     isStu: false,
     submitCheckcode: null,
-    passengers: null
+    passengers: null,
+    days: 0
 };
 
 var getInputInfo = function () {
@@ -69,9 +70,22 @@ var queryForOneAvailableItem = function(inputInfo) {
     // 黄牛囤积的票一般都卖给成人，所以学生票可以很容易地从黄牛手中抢到
     context.isStu = inputInfo.isStu ? !context.isStu : false;
     log(context.isStu ? '查询学生票...' : '查询成人票...');
+    
+    if(context.days > inputInfo.days){
+          context.days = 0;
+      }
+    var dt = new Date(inputInfo.date),
+        newDt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()+context.days),
+        m = '0' + (newDt.getMonth()+1),
+        d = '0' + newDt.getDate(),
+        date = newDt.getFullYear() + '-' + m.substr(m.length-2) + '-' + d.substr(d.length-2);
+    log('查询%0天,当前查询第%1天',inputInfo.days,context.days);
+    log('查询日期：%0', date);
+      
     return R.query(
-        inputInfo.from, inputInfo.to, inputInfo.date, context.isStu
+        inputInfo.from, inputInfo.to, date, context.isStu
     ).then(function (data) {
+        context.days++;
         var availableItem = null;
         var loged = {};
         $.each(inputInfo.trains, function(i, trainItem) {
