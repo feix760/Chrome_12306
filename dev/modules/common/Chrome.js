@@ -2,27 +2,18 @@ define('modules/common/Chrome', function(require, exports, module) {
 
   
   module.exports = {
-      clearAllCookies: function(urls, cb) {
-          var clear = function(url, cb) {
+      clearAllCookies: function(url) {
+          return new Promise(function(resolve) {
               chrome.cookies.getAll({url: url}, function(cookies) {
-                  $.each(cookies, function(i, item) {
+                  cookies.forEach(function(item) {
                       chrome.cookies.remove({
                           url: url + item.path,
                           name: item.name
                       });
                   });
-                  cb && cb();
+                  resolve();
               });
-          },
-          worker = function() {
-              var url = urls.shift();
-              if (url) {
-                  clear(url, worker);
-              } else {
-                  cb && cb();
-              }
-          };
-          worker();
+          });
       },
       syncSet: function(key, obj, cb) {
           key = key.replace(/[\s]*/g, '');
