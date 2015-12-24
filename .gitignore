@@ -2,5 +2,10 @@ src.pem
 .DS_Store
 .project
 .settings
+*.log
+*tmp
+/dev
 /build
 /node_modules
+/server/img/
+/server/test.js

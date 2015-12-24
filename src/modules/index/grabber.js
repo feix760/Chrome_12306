@@ -1,8 +1,15 @@
 
 var log = require('./log').log,
-    checkcode = require('./checkcode'),
+    moment = require('lib/moment'),
+    login = require('./login'),
+    Checkcode = require('./checkcode'),
     alarm = require('./alarm'),
-    R = require('./rest');
+    db = require('./db'),
+    checkcode = new Checkcode({
+        $ele: $('#order-checkcode'),
+        type: 'order',
+        forBtn: '.submit-order'
+    });
 
 var context = {
     tourFlag: 'dc',
@@ -34,7 +41,18 @@ var getInputInfo = function () {
     return {
         from: station_names[$('#from_station').val()], 
         to: station_names[$('#to_station').val()], 
-        date: $('#train_date').val(), 
+        dates: function() {
+            var startDate = moment($('#train_date').val()),
+                list = [startDate.format('YYYY-MM-DD')],
+                dateMoreCount = $('#days').val();
+            dateMoreCount = isNaN(dateMoreCount) || +dateMoreCount < 0 
+                ? 0 : +dateMoreCount;
+            for (var i = 0; i < dateMoreCount; i++) {
+                startDate.add(1, 'days');
+                list.push(startDate.format('YYYY-MM-DD'));
+            }
+            return list;
+        }(), 
         duration: +$('#query_duration').val(),
         trains: trains, 
         passengers: passengers, 
@@ -50,10 +68,17 @@ var _query = function() {
             if (!context.running) {
                 return reject();
             }
-            queryForOneAvailableItem(inputInfo)
-                .then(function (item) {
+            var chain = Promise.reject();
+            inputInfo.dates.forEach(function(date) {
+                chain = chain.catch(function(err) {
+                    inputInfo.date = date;
+                    return queryForOneAvailableItem(inputInfo);
+                });
+            });
+            chain.then(function (item) {
                     resolve(item);
-                }, function() {
+                })
+                .catch(function(err) {
                     setTimeout(task, inputInfo.duration);
                 });
         }
@@ -69,23 +94,10 @@ var queryForOneAvailableItem = function(inputInfo) {
     // 在服务器端两个页面cache更新的时间不同。
     // 黄牛囤积的票一般都卖给成人，所以学生票可以很容易地从黄牛手中抢到
     context.isStu = inputInfo.isStu ? !context.isStu : false;
-    log(context.isStu ? '查询学生票...' : '查询成人票...');
-    
-    if(context.days > inputInfo.days){
-          context.days = 0;
-      }
-    var dt = new Date(inputInfo.date),
-        newDt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()+context.days),
-        m = '0' + (newDt.getMonth()+1),
-        d = '0' + newDt.getDate(),
-        date = newDt.getFullYear() + '-' + m.substr(m.length-2) + '-' + d.substr(d.length-2);
-    log('查询%0天,当前查询第%1天',inputInfo.days,context.days);
-    log('查询日期：%0', date);
-      
-    return R.query(
-        inputInfo.from, inputInfo.to, date, context.isStu
+    log('%0 查询%1票..', inputInfo.date, context.isStu ? '学生' : '成人');
+    return db.query(
+        inputInfo.from, inputInfo.to, inputInfo.date, context.isStu
     ).then(function (data) {
-        context.days++;
         var availableItem = null;
         var loged = {};
         $.each(inputInfo.trains, function(i, trainItem) {
@@ -93,7 +105,7 @@ var queryForOneAvailableItem = function(inputInfo) {
             if (item) {
                 var info = item['queryLeftNewDTO'];
                 if (!loged[trainItem.no]) {
-                    log('%0：%1', info.station_train_code, item.buttonTextInfo);
+                    log('%0 %1：%2', inputInfo.date, info.station_train_code, item.buttonTextInfo);
                 }
                 if (item['buttonTextInfo'] == '预订') {
                     if (!loged[trainItem.no]) {
@@ -125,7 +137,6 @@ var queryForOneAvailableItem = function(inputInfo) {
         log('query fail');
         return Promise.reject();
     });
-
 };
 
 var findTrainItem = function(data, name) {
@@ -143,22 +154,27 @@ var findTrainItem = function(data, name) {
 
 var getOrderCheckcode = function() {
     return new Promise(function(resolve, reject) {
-        function check() {
-            var code = checkcode.get(2).join(',');
+        checkcode.refresh(true);
+        $('.submit-order').unbind('click').click(function() {
+            // stop
+            if (!context.running) {
+                return reject();
+            }
+            var code = checkcode.getValue().join(',');
             if (!code) {
                 return;
             }
             log('验证验证码： ' + code + " 中...");
-            R.checkRandCode(2, code).then(function () {
+            db.checkRandCode(2, code).then(function () {
                 alarm.hide();
                 log('验证码正确，自动提交订单！');
+                checkcode.finish();
                 resolve(code);
             }, function () {
-                checkcode.reset(2);
+                checkcode.refresh(true);
                 log('验证码： ' + code + " 错误！");
             });
-        }
-        $('.submit-order').unbind('click').click(check);
+        });
     });
 };
 
@@ -205,7 +221,6 @@ var _getPassengers = function(passengerDTOs, types, t) {
 };
 
 var query = function() {
-    var getTrainTime = null;
     if (context.running) {
         return;
     }
@@ -213,25 +228,23 @@ var query = function() {
 
     _query()
     .then(function(item) {
-        context.GET_TRAIN_TIME = +new Date();
+        context.getTrainTime = +new Date();
         context.item = item;
-        return R.submitOrderRequest(
+        return login.checkAndLogin();
+    })
+    .then(function() {
+        return db.submitOrderRequest(
             context.item, context.tourFlag, context.isStu
         );
     })
     .then(function() {
-        return R.initDc();
+        return db.initDc();
     })
     .then(function() {
-        checkcode.reset(2);
         alarm.show();
         log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
-        getTrainTime = +new Date();
         return getOrderCheckcode();
     })
-    //.then(function() {
-        //return R.getQueueCount(context.item, seatType);
-    //})
     .then(function(code) {
         var passengers = getPassengers();
         if (!passengers.length) {
@@ -241,13 +254,13 @@ var query = function() {
         log(passengers);
         context.passengers = passengers;
         context.submitCheckcode = code;
-        return R.checkOrderInfo(
+        return db.checkOrderInfo(
             context.passengers.ps, context.passengers.oldps, 
             context.submitCheckcode, context.tourFlag
         );
     })
     .then(function() {
-        return R.confirmSingleForQueue(
+        return db.confirmSingleForQueue(
             context.passengers.ps, context.passengers.oldps, 
             context.submitCheckcode, context.item
         );
@@ -256,7 +269,7 @@ var query = function() {
         stop();
         log(
             '提交订单成功，耗时: %0s，请点击查看订单前往12306完成付款。', 
-            ((+new Date() - getTrainTime) / 1000).toFixed(3)
+            ((+new Date() - context.getTrainTime) / 1000).toFixed(3)
         );
     })
     .catch(function(err) {
@@ -267,6 +280,7 @@ var query = function() {
 
 function stop() {
     context.running = false;
+    checkcode.finish();
 }
 
 return {

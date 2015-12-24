@@ -1,5 +1,7 @@
 
-var $wrap = $('.log_wrapper'),
+var 
+    utils = require('common/utils'),
+    $wrap = $('.log_wrapper'),
     $container = $('.log');
 
 var getId = function() {
@@ -9,12 +11,15 @@ var getId = function() {
     };
 }();
 
-function log(obj) {
+function log() {
     var args = [].slice.call(arguments);
-    if (typeof args[0] !== 'string' && args[0]) {
+    if (!args[0]) {
+        return;
+    }
+    if (typeof args[0] !== 'string') {
         args[0] = JSON.stringify(args[0]);
     }
-    var text = String.format.apply(null, args);
+    var text = utils.format.apply(utils, args);
     var id = $('<span></span>')
         .html('&nbsp;&nbsp;&nbsp;' + getId() + '&nbsp;');
     var t = $('<span></span>').text(text);

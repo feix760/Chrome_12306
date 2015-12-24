@@ -1,0 +1,19 @@
+{
+  "name": "Chrome-12306",
+  "keywords": [
+    "12306",
+    "chrome extension"
+  ],
+  "dependencies": {
+    "lodash": "*",
+    "nodejieba": "*",
+    "express": "4.9.5",
+    "body-parser": "1.9.2",
+    "md5": "^2.0.0",
+    "jshashes": "^1.0.5",
+    "qs": "^6.0.1",
+    "request": "^2.67.0",
+    "canvas": "^1.3.5",
+    "async": "^1.5.0"
+  }
+}

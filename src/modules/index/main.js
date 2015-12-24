@@ -1,11 +1,14 @@
 
+require('common/utils');
+require('common/autosave');
+require('./login');
+
 var logger = require('./log'),
     log = logger.log,
-    autosave = require('./autosave'),
-    checkcode = require('./checkcode'),
     alarm = require('./alarm'),
-    R = require('./rest'),
+    db = require('./db'),
     grabber = require('./grabber'),
+    $global = $(document),
     tpl = {
         trainOption: require('./tpl/trainOption.tpl'),
         trainItem: require('./tpl/trainItem.tpl'),
@@ -15,6 +18,7 @@ var logger = require('./log'),
         ticketResign: require('./tpl/ticketResign.tpl')
     };
 
+
 var switchDest = function() {
     var a = $('#from_station'),
         b = $('#to_station');
@@ -22,12 +26,15 @@ var switchDest = function() {
     a.val(b.val());
     b.val(v);
     setTimeout(function() {
-        exports.loadAvailableTrains();
+        loadAvailableTrains();
     }, 1);
 };
 
 var del_item = function() {
-    $(this).closest('.item').remove();
+    var $item = $(this).closest('.item'),
+        $parent = $item.parent();
+    $item.remove();
+    $parent.trigger('change');
 };
 
 var loadAvailableTrains = function() {
@@ -43,7 +50,7 @@ var loadAvailableTrains = function() {
     trains.attr('_data', $data);
 
     log('获取列车列表..');
-    R.query(from, to, date, false).then(function (data) {
+    db.query(from, to, date, false).then(function (data) {
         if (trains.attr('_data') != $data) {
             return;
         }
@@ -53,7 +60,7 @@ var loadAvailableTrains = function() {
                 train: item.queryLeftNewDTO.station_train_code
             }));
         });
-        $('#trains_list .item').remove();
+        trains.trigger('change');
         log('获取列车列表成功');
     }, function() {
         log('获取列车列表失败');
@@ -61,63 +68,53 @@ var loadAvailableTrains = function() {
 };
 
 var addTrain = function() {
-    var train = $('#available_trains option:selected').text(),
-        type = $('#available_train_type option:selected').val(),
-        typeName = $('#available_train_type option:selected').text();
-    if (!train) {
-        return;
-    }
-
-    var list = $('#trains_list');
+    var t = {
+        train: $('#available_trains option:selected').text(),
+        type: $('#available_train_type option:selected').val(),
+        name: $('#available_train_type option:selected').text()
+    };
+    var $list = $('#trains_list');
     if (
-        list.find('.item[_train=' + train + '][_type=' + type + ']')
+        $list.find('.item[_train=' + t.train + '][_type=' + t.type + ']')
             .length
     ) {
         return;
     }
-    list.append(tpl.trainItem({
-        type: type,
-        name: typeName,
-        train: train
-    }));
+    $list.append(tpl.trainItem(t)).trigger('change');
 };
 
-var addPassenger = function(p) {
-    var list = $('#passenger_list');
-    if (p.name == '' 
-        || p.id.length != 18 
-        || list.find('.item[_id=' + p.id + ']').length
-    ) {
-        return false;
-    }
-
-    if (list.find('.item').length >= 5) {
-        log('最多5位乘客！');
-        return false;
-    }
-
-    list.append(tpl.passenger(p));
-    return true;
-};
-
-var addOldPassenger = function() {
+var addPassenger = function() {
     var o = $('#old_p option:selected'),
         t = $('#old_p_type option:selected');
     if (o.length == 0) {
         return;
     }
-    addPassenger({
+    var p = {
         name: o.attr('_name'),
         id: o.attr('_id'),
         oldType: o.attr('_type'),
         type: t.val(),
         typeName: t.text()
-    });
+    };
+    var $list = $('#passenger_list');
+    if (p.name == '' 
+        || p.id.length != 18 
+        || $list.find('.item[_id=' + p.id + ']').length
+    ) {
+        return false;
+    }
+
+    if ($list.find('.item').length >= 5) {
+        log('最多5位乘客！');
+        return false;
+    }
+
+    $list.append(tpl.passenger(p)).trigger('change');
 };
 
 var loadMyPassengers = function() {
     log('获取已存乘客..');
-    R.getMyPassengers().then(function(data) {
+    db.getMyPassengers().then(function(data) {
         log('获取已存乘客成功');
         var options = $('#old_p').empty();
         data.forEach(function(item) {
@@ -127,36 +124,12 @@ var loadMyPassengers = function() {
                 type: item['passenger_type']
             }));
         });
+        options.trigger('change');
     }, function() {
         log('获取已存乘客失败，是否登陆了？');
     });
 };
 
-var logout = function() {
-    log('退出登陆中..');
-    R.logout().then(function() {
-        log('退出登陆成功！');
-        checkcode.reset(1);
-    });
-};
-
-var login = function() {
-    var user = $.trim($('#user').val());
-    var pwd = $.trim($('#pwd').val());
-    var code = checkcode.get(1).join(',');
-    log('登陆中..');
-    R.login(user, pwd, code).then(function() {
-        loadMyPassengers();
-        checkUser();
-        log('登陆成功');
-    }, function() {
-        log('登陆失败！');
-        checkcode.reset();
-    });
-}
-
-autosave.init();
-checkcode.init();
 alarm.init();
 logger.init();
 
@@ -187,10 +160,8 @@ $(document).on('click', '.delete_item', del_item);
 
 $('.switch_dest').click(switchDest);
 $('.add_train').click(addTrain);
-$('.old_p_add').click(addOldPassenger);
+$('.old_p_add').click(addPassenger);
 
-$('.login').click(login);
-$('.logout').click(logout);
 $('.refresh_train').click(loadAvailableTrains);
 $('.refresh_p').click(loadMyPassengers);
 
@@ -199,20 +170,10 @@ $('.stop_query').click(grabber.stop.bind(grabber));
 
 setTimeout(function() {
     loadAvailableTrains();
-    loadMyPassengers();
 }, 1000);
 
-function checkUser() {
-    var interval = 10000;
-    R.checkUser().then(function() {
-        $('.login').text('已登录').removeClass('nologin');
-        setTimeout(checkUser, interval);
-    }, function() {
-        $('.login').text('请登录').addClass('nologin');
-        setTimeout(checkUser, interval);
-    });
-}
-
-checkUser();
+$global.bind('login', function() {
+    loadMyPassengers();
+});
 
 

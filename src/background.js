@@ -1,4 +1,3 @@
-//"browser_action": {"default_icon": "icon.png", "default_popup": "popup.html"},
 chrome.browserAction.onClicked.addListener(function(tab) {
     var url = chrome.extension.getURL('pages/index/main.html');
     chrome.tabs.query({
@@ -13,8 +12,10 @@ chrome.browserAction.onClicked.addListener(function(tab) {
         });
     });
 });
+
 // 添加特殊请求头 _$Origin -> Origin
 chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
+    // TODO 跳过非插件发出的请求
     var headers = details.requestHeaders;
     var customHeaderNames = {};
     for (var i in headers) {

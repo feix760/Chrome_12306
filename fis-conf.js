@@ -19,7 +19,7 @@ fis.hook('commonjs', {
     .match('jquery.*', {
         isMod: false
     })
-    .match('{mod,moment,station_name}.js', {
+    .match('{mod,station_name}.js', {
         isMod: false
     })
     .match('**.min.js', {
@@ -56,4 +56,56 @@ fis.media('dev')
             to: '../dev'
         })
     });
+
+fis.media('dist')
+    .match('*.{js,css,png}', {
+        useHash: true
+    })
+    .match('*.{css,scss}', {
+        useSprite: true,
+        optimizer: fis.plugin('clean-css')
+    })
+    .match('*.{js,tpl}', {
+        optimizer: fis.plugin('uglify-js')
+    })
+    .match('/*', {
+        useHash: false
+    })
+    .match('*.min.js', {
+        optimizer: null
+    })
+    .match('::package', {
+        postpackager: [
+            fis.plugin('loader', {
+                resourceType: 'commonJs',
+                allInOne: {
+                    css: '${filepath}_aio.css',
+                    js: '${filepath}_aio.js',
+                }
+            })
+        ]
+    });
+
+function release(rel) {
+    var rt = {
+        deploy: [
+            fis.plugin('local-deliver', {
+                to: '../dist-tmp'
+            })
+        ]
+    };
+    rel && (rt.release = rel);
+    return rt;
+}
+
+// 生成public文件
+fis.media('dist')
+    .match('/*.*', release())
+    // 资源文件
+    .match(/\/modules\/.*\/([^\/\\]*)\.(wav|png|jpeg|jpg)/, release('/static/res/$1'))
+    // 合并的js,css
+    .match('/pages/(*)/*_aio.*', release('/static/$1'))
+    // html
+    .match('/pages/(*)/*.html', release('/pages/$1'));
+
 
