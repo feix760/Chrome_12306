@@ -47,12 +47,12 @@ exports.bind = function(checkcode) {
             })
             .then(function(data) {
                 if (src === checkcode.src) {
-                    checkcode.emit('recognize_succ', result);
+                    checkcode.emit('recognize_succ', result, src);
                 }
             })
             .catch(function(err) {
                 if (src === checkcode.src) {
-                    checkcode.emit('recognize_err');
+                    checkcode.emit('recognize_err', src);
                 }
             });
     });

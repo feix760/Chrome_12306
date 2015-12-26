@@ -62,10 +62,19 @@ function bind() {
         self.submit();
     });
 
-    this.on('recognize_err', function() {
+    this.on('recognize_err', function(src) {
+        var t = Date.now();
         setTimeout(
-            self.refresh.bind(self, self.waiting),
-            self._lastRecErr && Date.now() - self._lastRecErr < 2000 ? 2000 : 0
+            function() {
+                src === self.src && self.refresh();
+            },
+            Math.max(
+                0, 
+                // 错误最小间隔
+                1500 + (self._lastRecErr || 0) - t, 
+                // 用户手动输验证码
+                7000 + (self._lastChange || 0) - t
+            )
         );
         self._lastRecErr = Date.now();
     });

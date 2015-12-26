@@ -38,10 +38,11 @@ exports.result = function(buf, ak, sk) {
 
     return Promise.all([ocr, keywords]).then(function(data) {
         var q = data[0],
+            qwords = jiebaUtils.cut(q),
             keywords = data[1],
             result = [];
         keywords.forEach(function(words, i) {
-            if (jiebaUtils.similar(q, words)) {
+            if (jiebaUtils.similar(qwords, words, true)) {
                 result.push(i);
             }
         });
