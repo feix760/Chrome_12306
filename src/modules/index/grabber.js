@@ -230,6 +230,7 @@ var query = function() {
     .then(function(item) {
         context.getTrainTime = +new Date();
         context.item = item;
+        alarm.show(item);
         return login.checkAndLogin();
     })
     .then(function() {
@@ -241,7 +242,6 @@ var query = function() {
         return db.initDc();
     })
     .then(function() {
-        alarm.show();
         log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
         return getOrderCheckcode();
     })

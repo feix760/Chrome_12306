@@ -6,4 +6,3 @@
  * @require 'common/station_name'
  */
 require('modules/index/main');
-
