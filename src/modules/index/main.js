@@ -153,6 +153,7 @@ $('.station_name').autocomplete({
     },
     change: function() {
         loadAvailableTrains();
+        $(this).trigger('sync');
     }
 });
 

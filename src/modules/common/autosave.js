@@ -61,7 +61,7 @@ function init() {
             if (ele.hasAttribute('data-cachehtml')) {
                 $(ele).bind('change', setLocal.bind(ele, ele));
             } else {
-                $(ele).bind('change keypress keyup', setLocal.bind(ele, ele));
+                $(ele).bind('sync change keypress keyup', setLocal.bind(ele, ele));
             }
         }
    );

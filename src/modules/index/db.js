@@ -128,6 +128,9 @@ db.query = function(from, to, date, isStudent) {
         if (data && data.data) {
             return data.data;
         } else {
+            if (data && data.status === false && data.c_url) {
+                context.queryUrl = data.c_url; // 变换地址
+            }
             return Promise.reject(data);
         }
     });
