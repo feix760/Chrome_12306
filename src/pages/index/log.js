@@ -30,15 +30,15 @@ function log() {
     }
     //滚动滚动条至最下面
     setTimeout(() => {
-        $wrap.each(() => {
-            var $ele = $(this);
+        $wrap.each((i, ele) => {
+            var $ele = $(ele);
             var th = $ele.height(),
                 lh = $ele.find('.log').height();
             if (lh > th) {
                 $ele.scrollTop(lh - th);
             }
         });
-    }, 1);
+    }, 10);
 }
 
 function clear() {

@@ -1,3 +1,11 @@
+/**
+ * @require 'lib/mod.js'
+ * @require 'lib/jquery.min'
+ * @require 'lib/jquery.ui.min'
+ * @require 'lib/jquery.ui.autocomplete'
+ * @require 'lib/jquery.ui.datepicker'
+ * @require 'common/station_name'
+ */
 
 require('common/utils');
 require('common/autosave');

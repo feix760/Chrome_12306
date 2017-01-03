@@ -13,7 +13,8 @@ fis.hook('commonjs', {
             }
         ]
     })
-    .match('/modules/(**).js', {
+    .hook('annotation')
+    .match('**.js', {
         isMod: true
     })
     .match('jquery.*', {

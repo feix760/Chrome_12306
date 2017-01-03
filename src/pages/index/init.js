@@ -1,0 +1,5 @@
+/**
+ * @noWrap
+ */
+
+require('./index');

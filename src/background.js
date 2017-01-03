@@ -1,5 +1,5 @@
 const tabIds = {},
-    mainPage = chrome.extension.getURL('pages/index/main.html');
+    mainPage = chrome.extension.getURL('pages/index/index.html');
 
 chrome.browserAction.onClicked.addListener((tab) => {
     chrome.tabs.query({

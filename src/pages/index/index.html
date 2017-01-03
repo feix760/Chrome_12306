@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link  href="/modules/css/jquery-ui-1.10.3.css" rel="stylesheet" />
+    <link  href="/modules/css/common.css" rel="stylesheet" />
+    <link  href="./index.scss" rel="stylesheet" />
+    <title>12306抢票</title>
+</head>
+<body>
+    <div>
+        <span class="title">用户名:</span>
+        <input type="text" value="" id="user" style="width: 120px;"/>
+        <span class="title">密码:</span>
+        <input type="password" value="" id="pwd" style="width: 160px;"/>
+    </div>
+    <div>
+        <span class="title">发站:</span>
+        <input type="text" value="北京" id="from_station" class="station_name"/>
+        <span class="title"><span class="switch_dest">&lt;&gt;</span>&nbsp;到站:</span>
+        <input type="text" value="南昌" id="to_station"  class="station_name"/>
+        <span class="title">日期:</span>
+        <input type="text" value=""   id="train_date"/>
+        <!--<button type="button" class="resign_btn">改签抢票</button>-->
+        <span class="title">多抢:</span>
+        <input type="text" value="0" id="days"/>天
+    </div>
+    <div id="trains">
+        <span class="title">车次:</span>
+        <select id="available_trains" data-cachehtml="1"></select>
+        <select id="available_train_type">
+            <option value="yz">硬座</option>
+            <option value="wz">无座</option>
+            <option value="yw">硬卧</option>
+            <option value="ze">二等座</option>
+            <option value="zy">一等座</option>
+        </select>
+        <button type="button" class="add_train">添加</button>
+        <button type="button" class="refresh_train">刷新</button>
+        <span id="trains_list" class="items_list" data-cachehtml></span>
+    </div>
+    <div class="noresign">
+        <span class="title">添加乘客:</span>
+        <span class="title">已存乘客</span>
+        <select id="old_p" data-cachehtml="1"></select>
+        <select id="old_p_type">
+            <option value="1">成人票</option>
+            <option value="3">学生票</option>
+            <option value="2">儿童票</option>
+        </select>
+        <button type="button" class="old_p_add">添加</button>
+        <button type="button" class="refresh_p">刷新</button>
+    </div>
+    <div  class="noresign">
+        <span class="title">车票乘客：</span>
+        <span id="passenger_list" class="items_list" data-cachehtml></span>
+    </div>
+
+    <div class="resign">
+        <span class="title">可改签车票:</span>
+        <select id="tickets">
+        </select>
+        <button type="button" class="resign_add">添加</button>
+    </div>
+    <div  class="resign">
+        <span class="title">改签车票：</span>
+        <span id="resign_tickets" class="items_list">
+        </span>
+    </div>
+    <div id="time">&nbsp;</div>
+    <div>
+        <input type="checkbox" id="baiduyun-enable"/>验证码自动识别
+        url: <input type="text" id="baiduyun-url" value="http://localhost:8101/recognize" style="width: 200px"/>
+    </div>
+    <div>
+        百度云ak: <input type="text" id="baiduyun-ak" style="width: 200px"/>
+        sk: <input type="text" id="baiduyun-sk" style="width: 200px"/>
+    </div>
+    <div class="clearfix">
+        <div class="checkcode-container">
+            <div>验证码1:
+                <button type="button" class="login">登录</button>
+                <button type="button" class="logout">退出登录</button>
+            </div>
+            <div class="checkcode-wrap" id="login-checkcode"></div>
+        </div>
+        <div class="checkcode-container">
+            <div>验证码2: <button type="button" class="submit-order">提交</button></div>
+            <div class="checkcode-wrap" id="order-checkcode"></div>
+        </div>
+    </div>
+    <div>
+        <span class="title">查询间隔:</span>
+        <input type="text" value="200" style="width:35px;" id="query_duration"/>毫秒
+        &nbsp;<input type="checkbox" id="stu"/>学生票
+        <button type="button" class="query">开始查询</button>
+        <button type="button" class="stop_query">停止查询</button>
+
+        <button type="button" class="clear_log">清除日志</button>
+        <button type="button" class="alarm_switch">试听声音</button>
+        <a target="_blank" href="https://kyfw.12306.cn/otn/">12306</a>
+        <a target="_blank" href="https://kyfw.12306.cn/otn/queryOrder/initNoComplete">查看订单</a>
+    </div>
+    <div class="log_wrapper">
+        <div class="log"></div>
+    </div>
+    <div id="tips" class="hint">
+        1、请先手动打开12306确认证书错误；
+        <br>2、点击开始查询之后，听到报警声，立刻输入验证码2(右击验证码尝试提交), 订单将自动提交；
+    </div>
+    <div id="alarm">
+        <audio id="alarm_audio" src="./res/alarm.wav" loop="loop" ></audio>
+        <audio id="alarm_alert_audio" src="./res/alert.wav" loop="loop" ></audio>
+    </div>
+
+    <script src="./init" ></script>
+</body>
+</html>
+

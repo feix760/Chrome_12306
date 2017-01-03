@@ -29,7 +29,7 @@ function ajax(url, settings = {}) {
 };
 
 var context = {
-    queryUrl: 'leftTicket/queryT',
+    queryUrl: 'leftTicket/queryA',
     submitToken: '',
     keyChange: ''
 };
