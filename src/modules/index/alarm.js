@@ -47,7 +47,7 @@ var _titleBack = document.title,
 
 function _alertTitle() {
     var title = ''; 
-    _alertTitleInterval = setInterval(function() {
+    _alertTitleInterval = setInterval(() => {
         title = title.indexOf('*') === -1
             ? '****'
             : ''; 

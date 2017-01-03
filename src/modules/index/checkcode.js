@@ -33,55 +33,54 @@ var p = Checkcode.prototype;
 p.__proto__ = EventEmitter.prototype;
 
 function bind() {
-    var self = this;
     this.$img.bind('load', this._onload.bind(this));
     this.$ele.find('.checkcode-new').click(this.refresh.bind(this));
     this.$ele.find('.checkcode-click')
-        .click(function(e) {
+        .click((e) => {
             if (e.currentTarget === e.target) {
-                self._addValue(e.offsetX, e.offsetY);
+                this._addValue(e.offsetX, e.offsetY);
             }
-            self._lastChange = Date.now();
+            this._lastChange = Date.now();
         })
-        .bind('contextmenu', function(e) {
+        .bind('contextmenu', (e) => {
             e.preventDefault();
-            if (self._lastChange) {
-                self.submit();
-                self._lastChange = 0;
+            if (this._lastChange) {
+                this.submit();
+                this._lastChange = 0;
             }
         });
 
-    this.$ele.on('click', '.checkcode-select', function(e) {
+    this.$ele.on('click', '.checkcode-select', (e) => {
         e.preventDefault();
         e.stopPropagation();
         $(e.currentTarget).remove();
     });
 
-    this.on('recognize_succ', function(result) {
-        self.setValue(result);
-        self.submit();
+    this.on('recognize_succ', (result) => {
+        this.setValue(result);
+        this.submit();
     });
 
-    this.on('recognize_err', function(src) {
+    this.on('recognize_err', (src) => {
         var t = Date.now();
         setTimeout(
-            function() {
-                src === self.src && self.refresh();
+            () => {
+                src === this.src && this.refresh();
             },
             Math.max(
                 0, 
                 // 错误最小间隔
-                1500 + (self._lastRecErr || 0) - t, 
+                1500 + (this._lastRecErr || 0) - t, 
                 // 用户手动输验证码
-                7000 + (self._lastChange || 0) - t
+                7000 + (this._lastChange || 0) - t
             )
         );
-        self._lastRecErr = Date.now();
+        this._lastRecErr = Date.now();
     });
 
-    this.forBtn && $(this.forBtn).click(function() {
+    this.forBtn && $(this.forBtn).click(() => {
         // 提交一次之后验证码就失效了
-        self.src = null;
+        this.src = null;
     });
 };
 
@@ -110,15 +109,14 @@ p.refresh = function(_waiting) {
     this.setValue([]);
     this.$ele.find('.checkcode-select').remove();
     this.$ele.removeClass('loading loaded').addClass('loading');
-    var self = this,
-        url = 'https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?'
-            + (self.type === 'login' ? 'module=login&rand=sjrand' : 'module=passenger&rand=randp')
+    var url = 'https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?'
+            + (this.type === 'login' ? 'module=login&rand=sjrand' : 'module=passenger&rand=randp')
             + '&' + Math.random();
-    self.src = self.$img[0].src = url;
+    this.src = this.$img[0].src = url;
     // load timeout
-    setTimeout(function() {
-        if (self.$img.src === url && self.$img.hasClass('loading')) {
-            self.refresh();
+    setTimeout(() => {
+        if (this.$img.src === url && this.$img.hasClass('loading')) {
+            this.refresh();
         }
     }, 5000);
 };
@@ -129,7 +127,7 @@ p.finish = function() {
 
 p.getValue = function() {
     var val = [];
-    this.$ele.find('.checkcode-select').each(function() {
+    this.$ele.find('.checkcode-select').each(() => {
         var $ele = $(this);
         val.push($ele.data('x'));
         val.push($ele.data('y'));

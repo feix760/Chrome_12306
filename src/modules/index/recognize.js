@@ -2,7 +2,7 @@
 var db = require('./db');
 
 var recognize = function(url, base64, ak, sk) {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
         $.ajax(url, {
             type: 'post',
             data: {
@@ -10,14 +10,14 @@ var recognize = function(url, base64, ak, sk) {
                 sk: sk,
                 img: base64
             },
-            success: function(data) {
+            success: (data) => {
                 if (data && data.retCode === 0 && data.result.length) {
                     resolve(data.result);
                 } else {
                     reject(data);
                 }
             },
-            error: function() {
+            error: () => {
                 reject();
             }
         });
@@ -25,7 +25,7 @@ var recognize = function(url, base64, ak, sk) {
 };
 
 exports.bind = function(checkcode) {
-    checkcode.on('load', function() {
+    checkcode.on('load', () => {
         if (!checkcode.waiting) {
             return;
         }
@@ -39,18 +39,18 @@ exports.bind = function(checkcode) {
         }
         var result = null;
         recognize(url, base64, ak, sk)
-            .then(function(data) {
+            .then((data) => {
                 result = data;
                 return db.checkRandCode(
                     checkcode.type === 'order' ? 2 : 1, result.join(',')
                 );
             })
-            .then(function(data) {
+            .then((data) => {
                 if (src === checkcode.src) {
                     checkcode.emit('recognize_succ', result, src);
                 }
             })
-            .catch(function(err) {
+            .catch((err) => {
                 if (src === checkcode.src) {
                     checkcode.emit('recognize_err', src);
                 }

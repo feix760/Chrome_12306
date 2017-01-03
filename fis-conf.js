@@ -37,7 +37,7 @@ fis.hook('commonjs', {
     })
     .match('*.scss', {
         rExt: '.css',
-        parser: fis.plugin('sass')
+        parser: fis.plugin('node-sass')
     })
     .match('_*.scss', {
         release: false

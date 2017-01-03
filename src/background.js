@@ -1,21 +1,23 @@
-var tabIds = {},
+const tabIds = {},
     mainPage = chrome.extension.getURL('pages/index/main.html');
 
-chrome.browserAction.onClicked.addListener(function(tab) {
+chrome.browserAction.onClicked.addListener((tab) => {
     chrome.tabs.query({
         active: true,
         currentWindow: true
-    }, function(tabs) {
-        var tab = tabs[0];
+    }, (tabs) => {
+        const tab = tabs[0];
         chrome.tabs.update(tab.id, {
             url: mainPage
-        }, function() {
+        }, () => {
 
         });
     });
 });
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+const targetUrls = ['http://kyfw.12306.cn/*', "https://kyfw.12306.cn/*"];
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'loading') {
         if (tab.url === mainPage) {
             tabIds[tabId] = true;
@@ -26,39 +28,60 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 });
 
 // 添加特殊请求头 _$Origin -> Origin
-chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
-    var headers = details.requestHeaders;
-    // 跳过非插件发出的请求
-    if (!tabIds[details.tabId]) {
+chrome.webRequest.onBeforeSendHeaders.addListener(
+    (details) => {
+        const headers = details.requestHeaders;
+        // 跳过非插件发出的请求
+        if (!tabIds[details.tabId]) {
+            return {
+                requestHeaders: headers
+            };
+        }
+        const customHeaderNames = {};
+        headers.forEach((item) => {
+            if (item.name.indexOf('_$') === 0) {
+                const name = item.name.replace(/^_\$/,'');
+                customHeaderNames[name] = true;
+            }
+        });
+
+        const finalHeaders = [];
+        headers.forEach((item) => {
+            if (item.name.indexOf('_$') === 0) {
+                const name = item.name.replace(/^_\$/,'');
+                finalHeaders.push({
+                    name: name, 
+                    value: item.value
+                });
+            } else if (!customHeaderNames[item.name]) {
+                finalHeaders.push(item);
+            }
+        });
+
         return {
-            requestHeaders: headers
+            requestHeaders: finalHeaders
         };
-    }
-    var customHeaderNames = {};
-    for (var i in headers) {
-        var item = headers[i];
-        if (item.name.indexOf('_$') === 0) {
-            var name = item.name.replace(/^_\$/,'');
-            customHeaderNames[name] = true;
+    }, 
+    { urls: targetUrls }, 
+    ["blocking", "requestHeaders"]
+);
+
+chrome.webRequest.onHeadersReceived.addListener(
+    (details) => {
+        // 跳过非插件发出的请求
+        if (!tabIds[details.tabId]) {
+            return {
+                responseHeaders: headers
+            };
         }
-    }
-    var finalHeaders = [];
-    for (var i in headers) {
-        var item = headers[i];
-        if (item.name.indexOf('_$') === 0) {
-            var name = item.name.replace(/^_\$/,'');
-            finalHeaders.push({
-                name: name, 
-                value: item.value
-            });
-        } else if (!customHeaderNames[item.name]) {
-            finalHeaders.push(item);
-        }
-    }
-    return {
-        requestHeaders: finalHeaders
-    };
-}, {
-    urls: ['http://*/*', "https://*/*"]
-}, ["blocking", "requestHeaders"]);
+        return {
+            responseHeaders: details.responseHeaders.filter((item) => {
+                return item.name !== 'Expires';
+            })
+        };
+    }, 
+    { urls: targetUrls }, 
+    ["blocking", "responseHeaders"]
+);
+
 

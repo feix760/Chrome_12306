@@ -1,19 +1,27 @@
 
 var moment = require('lib/moment');
 
-function ajax(url, settings) {
-    settings = settings || {};
-    settings.headers = $.extend({
-        '_$Origin': 'https://kyfw.12306.cn',
-        '_$Referer': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-        '_$X-Requested-With': 'XMLHttpRequest'
-    }, settings.headers || {});
-    return new Promise(function(resolve, reject) {
+function ajax(url, settings = {}) {
+    settings = Object.assign(
+        {
+            timeout: 10000
+        }, 
+        settings || {}, 
+        {
+            headers: Object.assign({
+                '_$Cache-Control': 'no-cache',
+                '_$Origin': 'https://kyfw.12306.cn',
+                '_$Referer': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
+                '_$X-Requested-With': 'XMLHttpRequest'
+            }, settings.headers || {})
+        }
+    );
+    return new Promise((resolve, reject) => {
         $.ajax(url, settings).then(
-            function (data, status, jqXhr) {
+            (data, status, jqXhr) => {
                 resolve(data);
             }, 
-            function (jqXhr) {
+            (jqXhr) => {
                 reject(jqXhr.responseText || jqXhr.status);
             }
         )
@@ -44,7 +52,7 @@ db.checkRandCode = function(randId, code) {
             type: 'post',
             data: data
         }
-    ).then(function (data) {
+    ).then((data) => {
         if(!(data && data.data && data.data.result === '1')) {
             return Pormise.reject(data);
         }
@@ -64,7 +72,7 @@ db.checkUser = function () {
             }, 
             type: 'post'
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (!data || !data.data || !data.data.flag) {
             return Promise.reject(data);
         }
@@ -72,7 +80,7 @@ db.checkUser = function () {
 }; 
 
 db.login = function(user, pwd, code) {
-    return this.checkRandCode(1, code).then(function() {
+    return this.checkRandCode(1, code).then(() => {
         return ajax(
             'https://kyfw.12306.cn/otn/login/loginAysnSuggest', 
             {
@@ -83,7 +91,7 @@ db.login = function(user, pwd, code) {
                 },
                 type: 'post'
             }
-        ).then(function (data) {
+        ).then((data) => {
             if (!(data && data.data && data.data.loginCheck === 'Y')) {
                 return Promise.reject(data);
             }
@@ -100,7 +108,7 @@ db.getMyPassengers = function() {
             },
             type: 'post'
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (data && data.data && data.data.normal_passengers) {
             return data.data.normal_passengers;
         } else {
@@ -120,11 +128,10 @@ db.query = function(from, to, date, isStudent) {
         {
             data: params,
             headers: {
-                '_$If-Modified-Since': 0,
                 '_$Referer': 'https://kyfw.12306.cn/otn/leftTicket/init'
             }
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (data && data.data) {
             return data.data;
         } else {
@@ -155,7 +162,7 @@ db.getQueueCount = function (item, seatType) {
             }, 
             type: 'post'
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (data && data.data) {
             return data.data;
         } else {
@@ -187,7 +194,7 @@ db.submitOrderRequest = function(item, tour_flag, isStu) {
             },
             type: 'post'
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (!(data && data.status && data.data === 'N')) {
             return Promise.reject(data);
         }
@@ -204,7 +211,7 @@ db.initDc = function() {
             type: 'post', 
             dataType: 'html'
         }
-    ).then(function (data) {
+    ).then((data) => {
         context.submitToken = data.match(/globalRepeatSubmitToken[^']*'([\w]*)'/)
             ? RegExp.$1 : null;
         context.keyChange = data.match(/key_check_isChange':'([\w]*)'/)
@@ -246,7 +253,7 @@ db.checkOrderInfo = function(ps, oldps, code, tour_flag) {
             },
             type: 'post'
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (!(data && data.data && data.data.submitStatus)) {
             return Promise.reject(data);
         }
@@ -271,7 +278,7 @@ db.confirmSingleForQueue = function(ps, oldps, code, item) {
             }, 
             type: 'post'
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (!(data && data.data && data.data.submitStatus)) {
             return Promise.reject(data);
         }
@@ -302,7 +309,7 @@ db.getTictets = function(start, end) {
             },
             type: 'post'
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (data && data.data && data.data.OrderDTODataList) {
             return data.data.OrderDTODataList;
         } else {
@@ -322,7 +329,7 @@ db.resginTicket = function(tickets) {
                 _json_att: ''
             }
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (!(data && data.data && data.data.existError === 'N')) {
             return Promise.reject(data);
         }
@@ -333,7 +340,7 @@ function _getResginTicketsData(tickets) {
     // E243443701,1,03,0033,2014-01-18 20:06#E243443701,1,03,0033,2014-01-18 20:06#
     // E243443701
     var ticketkey = [], sequenceNo = '';
-    tickets.forEach(function(item) {
+    tickets.forEach((item) => {
         var no = item['ticket_no'];
         var temp = [
             no.substr(0, 10), 
@@ -370,7 +377,7 @@ db.confirmResignForQueue = function(ps, oldps, code, item) {
                 _json_att: ''
             }
         }
-    ).then(function (data) {
+    ).then((data) => {
         if (!(data && data.data && data.data.submitStatus)) {
             return Promise.reject(data);
         }

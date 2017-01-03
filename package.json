@@ -4,7 +4,11 @@
     "12306",
     "chrome extension"
   ],
-  "dependencies": {
+  "scripts": {
+    "start": "fis3 release dev -cw",
+    "build": "fis3 release dist -c"
+  },
+  "devDependencies": {
     "lodash": "*",
     "nodejieba": "*",
     "express": "4.9.5",

@@ -23,17 +23,17 @@ var
 function checkAndLogin() {
     checkTaskId && clearTimeout(checkTaskId);
     return checking = db.checkUser()
-        .then(function() {
+        .then(() => {
             $login.text('已登录').removeClass('nologin');
             isFirstCheck && $global.trigger('login');
         })
-        .catch(function() {
+        .catch(() => {
             checkcode.refresh(true);
             log('请登录..');
             $login.text('请登录').addClass('nologin');
             return loginToSucc();
         })
-        .then(function(data) {
+        .then((data) => {
             checkTaskId = setTimeout(checkAndLogin, checkInterval);
             checking = null;
             isFirstCheck = false;
@@ -41,14 +41,14 @@ function checkAndLogin() {
 }
 
 var loginToSucc = function() {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
         function task() {
-            $login.one('click', function() {
+            $login.one('click', () => {
                 login()
-                    .then(function(data) {
+                    .then((data) => {
                         resolve();
                     })
-                    .catch(function(err) {
+                    .catch((err) => {
                         task();
                     });
             });
@@ -63,13 +63,14 @@ var login = function() {
         code = checkcode.getValue().join(',');
     log('登陆中..');
     return db.login(user, pwd, code)
-        .then(function(data) {
+        .then((data) => {
             $login.text('已登录').removeClass('nologin');
             $global.trigger('login');
             log('登陆成功');
             checkcode.finish();
         })
-        .catch(function(err) {
+        .catch((err) => {
+            
             log('登陆失败！');
             checkcode.refresh(true);
             return Promise.reject(err);
@@ -84,8 +85,6 @@ var logout = function() {
         checkcode.refresh();
     });
 };
-
-$('.logout').click(logout);
 
 $login.click(function() {
     if (!checking) {

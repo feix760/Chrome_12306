@@ -6,7 +6,7 @@ var
 
 var getId = function() {
     var id = 0;
-    return function() {
+    return () => {
         return ('0000000000' + ++id).match(/[\w]{6}$/)[0];
     };
 }();
@@ -29,8 +29,8 @@ function log() {
         $container.find('> div:first').remove();
     }
     //滚动滚动条至最下面
-    setTimeout(function() {
-        $wrap.each(function() {
+    setTimeout(() => {
+        $wrap.each(() => {
             var $ele = $(this);
             var th = $ele.height(),
                 lh = $ele.find('.log').height();
@@ -51,7 +51,7 @@ module.exports = {
     init: function() {
         $(document).on('click', '.clear_log', clear);
 
-        setInterval(function() {
+        setInterval(() => {
             $('#time').text(new Date().pattern('HH:mm:ss'));
         }, 1000);
     }
