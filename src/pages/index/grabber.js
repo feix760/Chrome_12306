@@ -228,8 +228,12 @@ async function query() {
     
     await db.initDc();
     
-    log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
-    const code = await getOrderCheckcode();
+    let code = '';
+    if (false) {
+        log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
+        code = await getOrderCheckcode();
+    }
+
     const passengers = getPassengers(trip);
     if (!passengers.length) {
         log('请选择乘客！');

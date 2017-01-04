@@ -4,7 +4,7 @@ var moment = require('lib/moment');
 function ajax(url, settings = {}) {
     settings = Object.assign(
         {
-            timeout: 10000
+            timeout: 5000
         }, 
         settings || {}, 
         {

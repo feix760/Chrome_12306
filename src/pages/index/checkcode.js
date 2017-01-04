@@ -127,8 +127,8 @@ p.finish = function() {
 
 p.getValue = function() {
     var val = [];
-    this.$ele.find('.checkcode-select').each(() => {
-        var $ele = $(this);
+    this.$ele.find('.checkcode-select').each((i, ele) => {
+        var $ele = $(ele);
         val.push($ele.data('x'));
         val.push($ele.data('y'));
     });
