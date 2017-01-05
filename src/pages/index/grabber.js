@@ -220,6 +220,8 @@ async function query() {
     }
 
     const getTrainTime = +new Date();
+
+    log('time: %0', moment().format('YYYY-MM-DD HH:mm:ss'));
     
     alarm.show(trip);
     
@@ -249,7 +251,7 @@ async function query() {
     
     log(
         '提交订单成功，耗时: %0s，请点击查看订单前往12306完成付款。', 
-        ((+new Date() - getTrainTime) / 1000).toFixed(3)
+        ((Date.now() - getTrainTime) / 1000).toFixed(3)
     );
     
     stop();
