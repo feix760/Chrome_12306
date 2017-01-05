@@ -119,9 +119,9 @@ async function queryAvailableTrip(inputInfo) {
                 log('%0 %1：%2', inputInfo.date, info.station_train_code, item.buttonTextInfo);
                 if (onSale) {
                     log(
-                        '硬座：%0 无座：%1 硬卧：%2 二等座：%3 一等座：%4', 
+                        '硬座：%0 无座：%1 硬卧：%2 软卧：%3 二等座：%4 一等座：%5', 
                         info.yz_num, info.wz_num, info.yw_num, 
-                        info.ze_num, info.zy_num
+                        info.rw_num, info.ze_num, info.zy_num
                     );
                 }
             }
@@ -228,12 +228,6 @@ async function query() {
     await db.submitOrderRequest(trip, context.tourFlag, context.isStu);
     
     await db.initDc();
-    
-    let code = '';
-    if (false) {
-        log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
-        code = await getOrderCheckcode();
-    }
 
     const passengers = getPassengers(trip);
     if (!passengers.length) {
@@ -242,7 +236,14 @@ async function query() {
     }
     log(passengers);
     
-    await db.checkOrderInfo(passengers.ps, passengers.oldps, code, context.tourFlag);
+    const checkOrderInfo = await db.checkOrderInfo(passengers.ps, passengers.oldps, context.tourFlag);
+    
+    let code = '';
+
+    if (checkOrderInfo.ifShowPassCode === 'Y') {
+        log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
+        code = await getOrderCheckcode();
+    }
     
     await db.confirmSingleForQueue(passengers.ps, passengers.oldps, code, trip);
     

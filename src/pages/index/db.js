@@ -53,8 +53,10 @@ db.checkRandCode = function(randId, code) {
             data: data
         }
     ).then((data) => {
-        if(!(data && data.data && data.data.result === '1')) {
-            return Pormise.reject(data);
+        if (data && data.data && data.data.result === '1') {
+            return data.data;
+        } else {
+            return Promise.reject(data);
         }
     });
 };
@@ -73,7 +75,9 @@ db.checkUser = function () {
             type: 'post'
         }
     ).then((data) => {
-        if (!data || !data.data || !data.data.flag) {
+        if (data && data.data && data.data.flag) {
+            return data.data;
+        } else {
             return Promise.reject(data);
         }
     });
@@ -92,7 +96,9 @@ db.login = function(user, pwd, code) {
                 type: 'post'
             }
         ).then((data) => {
-            if (!(data && data.data && data.data.loginCheck === 'Y')) {
+            if (data && data.data && data.data.loginCheck === 'Y') {
+                return data.data;
+            } else {
                 return Promise.reject(data);
             }
         });
@@ -195,7 +201,9 @@ db.submitOrderRequest = function(item, tour_flag, isStu) {
             type: 'post'
         }
     ).then((data) => {
-        if (!(data && data.status && data.data === 'N')) {
+        if (data && data.status && data.data === 'N') {
+            return data.data;
+        } else {
             return Promise.reject(data);
         }
     });
@@ -235,7 +243,7 @@ db.dynamicJs = function(data) {
     }
 };
 
-db.checkOrderInfo = function(ps, oldps, code, tour_flag) {
+db.checkOrderInfo = function(ps, oldps, tour_flag, code = '') {
     return ajax(
         'https://kyfw.12306.cn/otn/confirmPassenger' 
             + '/checkOrderInfo',
@@ -254,7 +262,9 @@ db.checkOrderInfo = function(ps, oldps, code, tour_flag) {
             type: 'post'
         }
     ).then((data) => {
-        if (!(data && data.data && data.data.submitStatus)) {
+        if (data && data.data && data.data.submitStatus) {
+            return data.data;
+        } else {
             return Promise.reject(data);
         }
     });
@@ -279,7 +289,9 @@ db.confirmSingleForQueue = function(ps, oldps, code, item) {
             type: 'post'
         }
     ).then((data) => {
-        if (!(data && data.data && data.data.submitStatus)) {
+        if (data && data.data && data.data.submitStatus) {
+            return data.data;
+        } else {
             return Promise.reject(data);
         }
     });
@@ -330,7 +342,9 @@ db.resginTicket = function(tickets) {
             }
         }
     ).then((data) => {
-        if (!(data && data.data && data.data.existError === 'N')) {
+        if (data && data.data && data.data.existError === 'N') {
+            return data.data;
+        } else {
             return Promise.reject(data);
         }
     });
@@ -378,7 +392,9 @@ db.confirmResignForQueue = function(ps, oldps, code, item) {
             }
         }
     ).then((data) => {
-        if (!(data && data.data && data.data.submitStatus)) {
+        if (data && data.data && data.data.submitStatus) {
+            return data.data;
+        } else {
             return Promise.reject(data);
         }
     });
