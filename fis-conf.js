@@ -14,7 +14,7 @@ fis.hook('commonjs', {
         ]
     })
     .hook('annotation')
-    .match('**.js', {
+    .match('/{modules, pages}/**.js', {
         isMod: true
     })
     .match('jquery.*', {
@@ -24,9 +24,6 @@ fis.hook('commonjs', {
         isMod: false
     })
     .match('**.min.js', {
-        isMod: false
-    })
-    .match('/modules/common/lib.js', {
         isMod: false
     })
     .match(/\/(.+)\.tpl$/, {
