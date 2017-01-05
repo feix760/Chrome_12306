@@ -175,7 +175,8 @@ function getPassengers(item) {
         wz: 1,
         yw: 3,
         ze: 'O',
-        zy: 'M'
+        zy: 'M',
+        rw: 4
     };
     const passengerDTOs = Array.from($('#passenger_list .item')).map((ele) => {
         const $ele = $(ele);
