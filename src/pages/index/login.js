@@ -70,8 +70,7 @@ var login = function() {
             checkcode.finish();
         })
         .catch((err) => {
-            
-            log('登陆失败！');
+            log('登陆失败！%0', err && err.messages && err.messages.join(' '));
             checkcode.refresh(true);
             return Promise.reject(err);
         });

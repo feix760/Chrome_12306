@@ -84,25 +84,28 @@ db.checkUser = function () {
 }; 
 
 db.login = function(user, pwd, code) {
-    return this.checkRandCode(1, code).then(() => {
-        return ajax(
-            'https://kyfw.12306.cn/otn/login/loginAysnSuggest', 
-            {
-                data: {
-                    'loginUserDTO.user_name': user, 
-                    'userDTO.password': pwd, 
-                    randCode: code 
-                },
-                type: 'post'
-            }
-        ).then((data) => {
+    return this.checkRandCode(1, code)
+        .then(() => {
+            return ajax(
+                'https://kyfw.12306.cn/otn/login/loginAysnSuggest', 
+                {
+                    data: {
+                        'loginUserDTO.user_name': user, 
+                        'userDTO.password': pwd, 
+                        randCode: code 
+                    },
+                    type: 'post'
+                }
+            );
+        })
+        .then((data) => {
             if (data && data.data && data.data.loginCheck === 'Y') {
                 return data.data;
             } else {
                 return Promise.reject(data);
             }
         });
-    });
+        
 };
 
 db.getMyPassengers = function() {
