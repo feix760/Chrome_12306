@@ -16,7 +16,7 @@ var
         forBtn: '.login'
     }),
     checking = null,
-    checkInterval = 20000,
+    checkInterval = 5000,
     checkTaskId = null,
     isFirstCheck = false;
 

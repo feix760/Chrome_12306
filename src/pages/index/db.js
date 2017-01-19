@@ -67,16 +67,16 @@ db.logout = function() {
 
 db.checkUser = function () {
     return ajax(
-        'https://kyfw.12306.cn/otn/login/checkUser', 
+        // 'https://kyfw.12306.cn/otn/login/checkUser', 
+        'https://kyfw.12306.cn/otn/index/initMy12306', 
         {
-            data: {
-                _json_att: ''
-            }, 
-            type: 'post'
+            dataType: 'html'
         }
     ).then((data) => {
-        if (data && data.data && data.data.flag) {
-            return data.data;
+        if (data && data.match(/var sessionInit = '([^']+)';/)) {
+            return {
+                user: RegExp.$1
+            };
         } else {
             return Promise.reject(data);
         }
