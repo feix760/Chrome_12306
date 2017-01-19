@@ -4,7 +4,7 @@ var moment = require('lib/moment');
 function ajax(url, settings = {}) {
     settings = Object.assign(
         {
-            timeout: 5000
+            timeout: 20000
         }, 
         settings || {}, 
         {
@@ -68,20 +68,20 @@ db.logout = function() {
 
 db.checkUser = function () {
     return ajax(
-        // 'https://kyfw.12306.cn/otn/login/checkUser', 
-        'https://kyfw.12306.cn/otn/index/initMy12306', 
-        {
-            dataType: 'html'
-        }
-    ).then((data) => {
-        if (data && data.match(/var sessionInit = '([^']+)';/)) {
-            return {
-                user: RegExp.$1
-            };
-        } else {
-            return Promise.reject(data);
-        }
-    });
+            // 'https://kyfw.12306.cn/otn/login/checkUser', 
+            'https://kyfw.12306.cn/otn/index/initMy12306', 
+            {
+                dataType: 'html'
+            }
+        )
+        .catch(() => {
+            return Promise.resolve();
+        })
+        .then((data) => {
+            if (data && !data.match(/var sessionInit = '([^']+)';/)) {
+                return Promise.reject(data);
+            }
+        });
 }; 
 
 db.login = function(user, pwd, code) {
@@ -163,6 +163,7 @@ db.query = function(from, to, date, isStudent) {
                 url,
                 {
                     data: params,
+                    timeout: 5000,
                     headers: {
                         '_$Referer': 'https://kyfw.12306.cn/otn/leftTicket/init'
                     }

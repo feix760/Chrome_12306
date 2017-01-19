@@ -71,6 +71,7 @@ async function loopQueryTrip() {
 
         for (let i = 0; i < inputInfo.dates.length; i++) {
             inputInfo.date = inputInfo.dates[i];
+            await delay(100);
             try {
                 trip = await queryAvailableTrip(inputInfo);
             } catch(ex) {
