@@ -29,7 +29,8 @@ function ajax(url, settings = {}) {
 };
 
 var context = {
-    queryUrl: 'leftTicket/queryA',
+    queryUrl: '',
+    queryUrlTime: 0,
     submitToken: '',
     keyChange: ''
 };
@@ -126,30 +127,59 @@ db.getMyPassengers = function() {
     });
 };
 
+function setQueryUrl(url) {
+    context.queryUrl = `https://kyfw.12306.cn/otn/${url}`;
+    context.queryUrlTime = Date.now();
+}
+
+db.getQueryUrl = function() {
+    if (Date.now() - context.queryUrlTime < 10000) {
+        return Promise.resolve(context.queryUrl);
+    }
+    return ajax(
+        'https://kyfw.12306.cn/otn/leftTicket/init',
+        {
+            dataType: 'html'
+        }
+    ).then((data) => {
+        if (data && data.match(/var CLeftTicketUrl = '([^']+)';/)) {
+            setQueryUrl(RegExp.$1);
+            return context.queryUrl;
+        } else {
+            return Promise.reject(data);
+        }
+    });
+};
+
 db.query = function(from, to, date, isStudent) {
     var purpose_codes = isStudent ? '0X00' : 'ADULT';
     var params = 'leftTicketDTO.train_date=' + date 
         + '&leftTicketDTO.from_station=' + from 
         + '&leftTicketDTO.to_station=' + to 
         + '&purpose_codes=' + purpose_codes;
-    return ajax(
-        'https://kyfw.12306.cn/otn/' + context.queryUrl, 
-        {
-            data: params,
-            headers: {
-                '_$Referer': 'https://kyfw.12306.cn/otn/leftTicket/init'
+    return db.getQueryUrl()
+        .then((url) => {
+            return ajax(
+                url,
+                {
+                    data: params,
+                    headers: {
+                        '_$Referer': 'https://kyfw.12306.cn/otn/leftTicket/init'
+                    }
+                }
+            );
+        })
+        .then((data) => {
+            if (data && data.data) {
+                return data.data;
+            } else {
+                if (data && data.status === false && data.c_url) {
+                    // 变换地址
+                    setQueryUrl(data.c_url); 
+                }
+                return Promise.reject(data);
             }
-        }
-    ).then((data) => {
-        if (data && data.data) {
-            return data.data;
-        } else {
-            if (data && data.status === false && data.c_url) {
-                context.queryUrl = data.c_url; // 变换地址
-            }
-            return Promise.reject(data);
-        }
-    });
+        });
 };
 
 db.getQueueCount = function (item, seatType) {
