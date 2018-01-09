@@ -2,23 +2,19 @@
 
 ## 开发
 
-使用[fis3](http://fis.baidu.com/fis3/docs/beginning/intro.html)构建:
-
 ```sh
-npm install -g fis3
+npm install
 ```
 
 之后运行:
 
 ```sh
-fis3 release -w dev
+npm start
 ```
 
-提示某些插件未安装, 安装插件例如:
+## 安装
 
-```sh
-npm install -g  fis3-parser-sass
-```
+Chrome打开[扩展程序管理页](chrome://extensions/), 勾选`开发者模式`, 点击`加载已解压的扩展程序`选择构建生成的`dist`目录
 
 ## 验证码自动识别
 
@@ -37,12 +33,8 @@ npm install -g  fis3-parser-sass
 
 ```sh
 npm install
-node app.js
+node index.js
 ```
-
-## 安装
-
-Chrome浏览器 -> settings -> extensions ->  load unpacked extension -> 选择`dev`目录(参考`开发`生成)
 
 ## 问题
 

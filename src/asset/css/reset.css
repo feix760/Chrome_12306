@@ -1,0 +1,25 @@
+html, body, span, div, p, td, a, ul, li, img, dd, dl, dt, form, h1, h2, h3, h4, h5, summary, details, header, section, footer, hgroup, nav, mark, embed, datalist, article, canvas, time {
+  margin: 0px;
+  padding: 0px;
+  border: 0px;
+}
+
+input {
+  margin: 0px;
+  padding: 0px;
+}
+
+textarea, input, select, body, button {
+  font-size: 12px;
+  line-height: 1.5;
+  position: relative;
+  font-family: verdana, "微软雅黑", "宋体", "細明體", "新細明體", "標楷體", 'Lucida Grande', 'Lucida Sans Unicode', arial, sans-serif;
+}
+
+button {
+  cursor: pointer;
+}
+
+input[type=checkbox] {
+  cursor: pointer;
+}

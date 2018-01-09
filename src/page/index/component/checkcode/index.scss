@@ -1,0 +1,47 @@
+.checkcode-wrap {
+  position: relative;
+  display: inline-block;
+  width: 293px;
+  height: 190px;
+  background: #eee;
+
+  img {
+    display: block;
+    width: 293px;
+    height: 190px;
+    cursor: pointer;
+  }
+
+  .refresh-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    line-height: 30px;
+    padding-right: 10px;
+    cursor: pointer;
+    box-sizing: border-box;
+    text-align: right;
+  }
+
+  .click-area {
+    position: absolute;
+    top: 40px;
+    left: 5px;
+    right: 5px;
+    bottom: 9px;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .point {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    border: 2px solid red;
+    top: 0;
+    left: 0;
+  }
+}

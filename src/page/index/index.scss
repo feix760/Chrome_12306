@@ -1,0 +1,21 @@
+@import "../../asset/css/reset";
+
+html {
+  font-size: 12px;
+}
+
+body {
+  padding: 10px 15px;
+  width: 800px;
+}
+
+.date-picker-wrap {
+  display: inline-block;
+  position: relative;
+  & > div {
+    display: inline-block;
+  }
+  .react-datepicker-popper {
+    transform: translate3d(0px, 30px, 0px)!important;
+  }
+}

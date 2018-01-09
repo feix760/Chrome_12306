@@ -1,11 +1,10 @@
-src.pem
 .DS_Store
 .project
 .settings
 *.log
 *tmp
-/dev
-/build
+/dist
 /node_modules
 /server/img/
 /server/test.js
+/Chrome_12306
