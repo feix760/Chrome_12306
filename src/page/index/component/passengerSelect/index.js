@@ -1,15 +1,9 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import { INPUT_UPDATE } from '../../action/input';
+import { getUpdater, passengerTypeMap } from '../../action/input';
 import api from '../../api';
 import './index.scss';
-
-const typeMap = [
-  { name: '成人票', key: '1' },
-  { name: '学生票', key: '3' },
-  { name: '儿童票', key: '2' },
-].reduce((o, item) => Object.assign(o, { [item.key]: item }), {});
 
 class Component extends React.Component {
   constructor() {
@@ -57,7 +51,7 @@ class Component extends React.Component {
     if (!found) {
       this.updateList(passengerList.concat([{
         ...passenger,
-        type,
+        type, // 成人票/学生票/儿童票
       }]));
     }
   }
@@ -87,8 +81,8 @@ class Component extends React.Component {
         </select>
         <select ref="type">
           {
-            Object.keys(typeMap).map(type => (
-              <option value={type} key={type}>{typeMap[type].name}</option>
+            Object.keys(passengerTypeMap).map(type => (
+              <option value={type} key={type}>{passengerTypeMap[type].name}</option>
             ))
           }
         </select>
@@ -107,21 +101,15 @@ class Component extends React.Component {
   }
 }
 
-export default connect(({ input, login }) => {
-  return {
+export default connect(
+  ({
     input,
     login,
-  }
-}, (dispatch) => {
-  return {
-    update(field) {
-      return data => {
-        dispatch({
-          type: INPUT_UPDATE,
-          field: field,
-          value: data.target ? data.target.value : data,
-        });
-      }
-    },
-  }
-})(Component);
+  }) => ({
+    input,
+    login,
+  }),
+  dispatch => ({
+    update: getUpdater(dispatch),
+  })
+)(Component);

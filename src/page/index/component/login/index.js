@@ -55,16 +55,15 @@ class Component extends React.Component {
   }
 }
 
-export default connect(({
-  input,
-  login,
-}) => {
-  return {
+export default connect(
+  ({
     input,
     login,
-  }
-}, (dispatch) => {
-  return {
+  }) => ({
+    input,
+    login,
+  }),
+  dispatch => ({
     loginCheck() {
       return dispatch(loginCheck());
     },
@@ -74,5 +73,5 @@ export default connect(({
     logoutPost() {
       return dispatch(logoutPost());
     },
-  };
-})(Component);
+  })
+)(Component);

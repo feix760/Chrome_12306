@@ -1,0 +1,43 @@
+
+.action-area-container {
+  .alarm {
+    position: fixed;
+    z-index: 100;
+    margin: 0;
+    width: 100%;
+    height: 40px;
+    top: 0;
+    left: 0;
+    background: red;
+    animation: flash 300ms ease 0s infinite;
+  }
+
+  input[type=text] {
+    width: 60px;
+    margin: 0 5px;
+  }
+  input[type=checkbox] {
+    margin: 0 5px;
+  }
+  a {
+    margin-left: 10px;
+  }
+}
+
+@keyframes flash {
+  0% {
+    background-color: red;
+  }
+
+  50% {
+    background-color: red;
+  }
+
+  51% {
+    background-color: green;
+  }
+
+  100% {
+    background-color: green;
+  }
+}

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
 import StationAutocomplete from '../stationAutocomplete';
-import { INPUT_UPDATE } from '../../action/input';
+import { getUpdater } from '../../action/input';
 import 'react-datepicker/dist/react-datepicker.css';
 import './index.scss';
 
@@ -43,20 +43,13 @@ class Component extends React.Component {
   }
 }
 
-export default connect(({ input }) => {
-  return {
+export default connect(
+  ({
     input,
-  }
-}, (dispatch) => {
-  return {
-    update(field) {
-      return data => {
-        dispatch({
-          type: INPUT_UPDATE,
-          field: field,
-          value: data.target ? data.target.value : data,
-        });
-      }
-    }
-  }
-})(Component);
+  }) => ({
+    input,
+  }),
+  dispatch => ({
+    update: getUpdater(dispatch),
+  })
+)(Component);

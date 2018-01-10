@@ -1,4 +1,5 @@
 
+import moment from 'moment';
 import request from 'asset/common/request';
 
 const api = {
@@ -128,14 +129,19 @@ const api = {
           return (data.data.result || []).map(item => {
             const fields = item.split('|');
             return {
-              id: fields[0],
               button: fields[1],
               name: fields[3], // 车次号
+              secretStr: fields[0],
+              fromStationName: fields[6],
+              toStationName: fields[7],
+              leftTicketStr: fields[12],
+              locationCode: fields[15],
+              date: fields[13],
               rw: fields[23], // 软卧
               wz: fields[26], // 卧铺
               yw: fields[28], // 硬座
               yz: fields[29], // 硬座
-              swz: fields[32], // 商务座
+              zs: fields[32], // 商务座
               zy: fields[31], // 一等座
               ze: fields[30], // 二等座
               fields,
@@ -143,7 +149,7 @@ const api = {
           });
         } else {
           if (data && data.status === false && data.c_url) {
-            console.log('new addr', data);
+            console.error('new addr', data);
           }
           return Promise.reject(data);
         }
@@ -177,31 +183,19 @@ const api = {
       });
   },
 
-  submitOrderRequest(item, tour_flag, isStu) {
-    // secretStr:rGlW9Ul7Lbte0YySVnZDttvKs4Uo/LCyg/JVjY/OteQ7rOFgdEkrTlU7aDgNW4t13BAKoPE8Q+F0
-// lV/R93ftaaAED5gNm1Av1H1EfP6FvMo+Rb+7SzcszecQrh2b62J6viREc9T229nWwt1WsD/5Jci5
-// ImWWgkvtSvLMKPaJHL60fFlDaipZIzq5bZ8WWQBxfC3rSW+36TmrqF96moNE+tVwG13koIEtksNJ
-// 3OB0wmGyaveb0HyMIdJwclKKPvrbgGSgTJcTLr4=
-// train_date:2018-01-10
-// back_train_date:2018-01-10
-// tour_flag:dc
-// purpose_codes:ADULT
-// query_from_station_name:南昌
-// query_to_station_name:广州
-// undefined:
-    //
+  submitOrderRequest({ train, tourFlag, isStu }) {
     const DATA_P = 'YYYY-MM-DD';
     return request({
         url: 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest',
         method: 'POST',
         data: {
-          secretStr: decodeURIComponent(item.secretStr),
-          train_date: moment(item.queryLeftNewDTO.start_train_date, 'YYYYMMDD').format(DATA_P),
+          secretStr: decodeURIComponent(train.secretStr),
+          query_from_station_name: train.fromStationName,
+          query_to_station_name: train.toStationName,
+          train_date: moment(train.date, 'YYYYMMDD').format(DATA_P),
           back_train_date: moment().format(DATA_P),
-          tour_flag: tour_flag,
+          tour_flag: tourFlag,
           purpose_codes: isStu ? '0X00' : 'ADULT',
-          query_from_station_name: item.queryLeftNewDTO.from_station_name,
-          query_to_station_name: item.queryLeftNewDTO.to_station_name,
           myversion: 'undefined',
           'undefined': ''
         },
@@ -240,27 +234,19 @@ const api = {
     };
   },
 
-  checkOrderInfo(ps, oldps, tour_flag, code = '') {
-    // cancel_flag:2
-// bed_level_order_num:000000000000000000000000000000
-// passengerTicketStr:3,0,1,袁飞翔,1,36220219910701281X,18576697703,N
-// oldPassengerStr:袁飞翔,1,36220219910701281X,1_
-// tour_flag:dc
-// randCode:
-// whatsSelect:1
-// _json_att:
-// REPEAT_SUBMIT_TOKEN:23c345b5c3dfbc587c4d1abfb9ac7249
+  checkOrderInfo({ passengerTicketStr, oldPassengerStr, tourFlag, randCode = '', submitToken }) {
     return request({
         url: 'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo',
         method: 'POST',
         data: {
           cancel_flag: 2,
           bed_level_order_num: '000000000000000000000000000000',
-          passengerTicketStr: ps,
-          oldPassengerStr: oldps,
-          tour_flag: tour_flag,
-          randCode: code,
-          REPEAT_SUBMIT_TOKEN: context.submitToken,
+          tour_flag: tourFlag,
+          passengerTicketStr,
+          oldPassengerStr,
+          randCode,
+          whatsSelect: 1,
+          REPEAT_SUBMIT_TOKEN: submitToken,
           _json_att: ''
         },
       })
@@ -273,19 +259,24 @@ const api = {
       });
   },
 
-  confirmSingleForQueue(ps, oldps, code, item) {
+  confirmSingleForQueue({ passengerTicketStr, oldPassengerStr, randCode = '', submitToken, keyChange, train }) {
     return request({
         url: 'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue',
         method: 'POST',
         data: {
-          passengerTicketStr: ps,
-          oldPassengerStr: oldps,
-          randCode: code,
-          REPEAT_SUBMIT_TOKEN: context.submitToken,
-          key_check_isChange: context.keyChange,
-          leftTicketStr: item.queryLeftNewDTO.yp_info,
+          passengerTicketStr,
+          oldPassengerStr,
+          randCode,
+          REPEAT_SUBMIT_TOKEN: submitToken,
+          key_check_isChange: keyChange,
+          leftTicketStr: train.leftTicketStr,
+          train_location: train.locationCode,
           purpose_codes: '00',
-          train_location: item.queryLeftNewDTO.location_code,
+          choose_seats: '',
+          seatDetailType: '000',
+          whatsSelect: 1,
+          roomType: '00',
+          dwAll: 'N',
           _json_att: ''
         },
       })

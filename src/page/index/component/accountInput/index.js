@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import { INPUT_UPDATE } from '../../action/input';
+import { getUpdater } from '../../action/input';
 import './index.scss';
 
 class Component extends React.Component {
@@ -23,20 +23,13 @@ class Component extends React.Component {
   }
 }
 
-export default connect(({ input }) => {
-  return {
+export default connect(
+  ({
     input,
-  }
-}, (dispatch) => {
-  return {
-    update(field) {
-      return data => {
-        dispatch({
-          type: INPUT_UPDATE,
-          field: field,
-          value: data.target ? data.target.value : data,
-        });
-      }
-    }
-  }
-})(Component);
+  }) => ({
+    input,
+  }),
+  dispatch => ({
+    update: getUpdater(dispatch),
+  })
+)(Component);

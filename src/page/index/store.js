@@ -4,12 +4,14 @@ import thunkMiddleware from 'redux-thunk';
 import moment from 'moment';
 import input from './reducer/input';
 import login from './reducer/login';
+import order from './reducer/order';
 
 const STATE_KEY = 'state';
 
 const reducers = {
   input,
   login,
+  order,
 };
 
 const store = createStore(
@@ -38,7 +40,16 @@ function getInitialState() {
 }
 
 function saveState() {
-  const state = store.getState();
+  const state = {
+    ...store.getState(),
+  };
+  // apply serialization
+  Object.keys(reducers).forEach(key => {
+    const fn = reducers[key];
+    if (fn.serialization) {
+      state[key] = fn.serialization(state[key]);
+    }
+  });
   try {
     localStorage.setItem(STATE_KEY, JSON.stringify(state));
   } catch (err) {

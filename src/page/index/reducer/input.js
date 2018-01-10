@@ -10,6 +10,8 @@ const defaultState = {
   date: moment(),
   trainList: [], // 选择的火车列表
   passengerList: [], // 选择的购票人员列表
+  duration: 200, // 查询间隔
+  queryStudent: false, // 是否查询学生票
 };
 
 function fn(state = defaultState, action) {
@@ -26,10 +28,18 @@ function fn(state = defaultState, action) {
   return state
 }
 
-fn.deserialization = function(obj) {
-  if (obj && obj.date) {
+fn.deserialization = function(obj = {}) {
+  if (obj.date) {
     obj.date = moment(obj.date);
   }
+  obj = {
+    ...defaultState,
+    ...obj,
+  };
+  return obj;
+};
+
+fn.serialization = function(obj) {
   return obj;
 };
 

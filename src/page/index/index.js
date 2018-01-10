@@ -12,6 +12,8 @@ import PassengerSelect from './component/passengerSelect';
 import Clock from './component/clock';
 import Checkcode from './component/checkcode';
 import Login from './component/login';
+import Submit from './component/submit';
+import ActionArea from './component/actionArea';
 import './index.scss';
 
 class Component extends React.Component {
@@ -33,10 +35,14 @@ class Component extends React.Component {
             <Login />
           </div>
           <div>
-            <Checkcode isSubmit={true} />
+            <Submit />
           </div>
         </div>
+        <ActionArea />
         <div id="log"></div>
+        <div id="tip">
+          1、点击开始查询之后，听到报警声，立刻输入订单验证码(右击验证码尝试提交), 订单将自动提交；
+        </div>
       </div>
     );
   }

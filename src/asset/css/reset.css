@@ -51,6 +51,7 @@ textarea {
   overflow: auto;
 }
 
+input[type=checkbox],
 button {
   cursor: pointer;
 }
