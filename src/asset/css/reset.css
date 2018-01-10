@@ -1,25 +1,56 @@
-html, body, span, div, p, td, a, ul, li, img, dd, dl, dt, form, h1, h2, h3, h4, h5, summary, details, header, section, footer, hgroup, nav, mark, embed, datalist, article, canvas, time {
-  margin: 0px;
-  padding: 0px;
-  border: 0px;
+
+html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, p, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td, hr, button, article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  margin: 0;
+  padding: 0;
 }
 
-input {
-  margin: 0px;
-  padding: 0px;
+html, body, fieldset, img, iframe, abbr {
+  border: 0;
 }
 
-textarea, input, select, body, button {
-  font-size: 12px;
+article, aside, details, figcaption, figure, footer, header, nav, section {
+  display: block;
+}
+
+ul, ol, li {
+  list-style: none;
+}
+
+body, button, input, select, textarea {
+  font: 12px "微软雅黑", "Microsoft YaHei", "宋体", "SimSun", "苹果丽细宋", Tahoma, Helvetica, Arial, sans-serif;
   line-height: 1.5;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  overflow: auto;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-overflow-scrolling: touch;
   position: relative;
-  font-family: verdana, "微软雅黑", "宋体", "細明體", "新細明體", "標楷體", 'Lucida Grande', 'Lucida Sans Unicode', arial, sans-serif;
+}
+
+*:focus {
+  outline: none;
+}
+
+img {
+  vertical-align: middle;
+  display: inline-block;
+}
+
+input, a, button, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+textarea {
+  resize: none;
+  overflow: auto;
 }
 
 button {
-  cursor: pointer;
-}
-
-input[type=checkbox] {
   cursor: pointer;
 }

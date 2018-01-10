@@ -15,6 +15,12 @@ class Component extends React.Component {
     };
   }
 
+  switch = () => {
+    const { from, to } = this.props.input;
+    this.props.update('from')(to);
+    this.props.update('to')(from);
+  }
+
   render() {
     const { props } = this;
     const { input } = props;
@@ -22,7 +28,7 @@ class Component extends React.Component {
       <section className="trip-input">
         <span>发站:</span>
         <StationAutocomplete value={input.from} onChange={props.update('from')} />
-        <span>&lt;&gt;</span>
+        <span onClick={this.switch}>&lt;&gt;</span>
         <span>到站:</span>
         <StationAutocomplete value={input.to} onChange={props.update('to')} />
         <span>日期:</span>

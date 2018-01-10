@@ -19,11 +19,19 @@ const stationNames = (() => {
 })();
 
 export default class Component extends React.Component {
-  constructor() {
+  constructor(props) {
     super(...arguments);
     this.state = {
-      value: '',
+      value: props.value && props.value.name || '',
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.value !== this.props.value && nextProps.value) {
+      this.setState({
+        value: nextProps.value.name,
+      });
+    }
   }
 
   renderItem = (item, isHighlighted) => {

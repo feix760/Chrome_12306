@@ -15,7 +15,7 @@ class Component extends React.Component {
     return (
       <section className="account-input">
         <span>用户名:</span>
-        <input type="text" value={input.loginname} onChange={props.update('loginname')} />
+        <input type="text" value={input.account} onChange={props.update('account')} />
         <span>密码:</span>
         <input type="password" value={input.password} onChange={props.update('password')} />
       </section>

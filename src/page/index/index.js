@@ -3,14 +3,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider, connect } from 'react-redux';
 import 'asset/common/component.extend';
+import * as Log from './log';
 import store from './store';
 import AccountInput from './component/accountInput';
 import TripInput from './component/tripInput';
 import TrainSelect from './component/trainSelect';
 import PassengerSelect from './component/passengerSelect';
-import TripList from './component/tripList';
 import Clock from './component/clock';
 import Checkcode from './component/checkcode';
+import Login from './component/login';
 import './index.scss';
 
 class Component extends React.Component {
@@ -26,16 +27,16 @@ class Component extends React.Component {
         <TripInput />
         <TrainSelect />
         <PassengerSelect />
-        <TripList />
         <Clock />
         <div className="layout">
-          <div className="login-wrap">
-            <Checkcode />
+          <div>
+            <Login />
           </div>
-          <div className="submit-wrap">
+          <div>
             <Checkcode isSubmit={true} />
           </div>
         </div>
+        <div id="log"></div>
       </div>
     );
   }

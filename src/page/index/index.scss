@@ -9,6 +9,38 @@ body {
   width: 800px;
 }
 
+button {
+  border: 1px solid #eee;
+  background: #fff;
+  padding: 0 5px;
+  line-height: 18px;
+  border-radius: 4px;
+  margin-left: 5px;
+  vertical-align: top;
+}
+
+section {
+  margin-bottom: 6px;
+}
+
+select {
+  border: 1px solid #ddd;
+  vertical-align: top;
+  margin-left: 5px;
+}
+
+input[type=text],
+input[role=combobox],
+input[type=password] {
+  padding: 3px 5px;
+  border: 1px solid #ddd;
+  height: 12px;
+  line-height: 12px;
+  vertical-align: top;
+  border-radius: 4px;
+  margin-left: 5px;
+}
+
 .date-picker-wrap {
   display: inline-block;
   position: relative;
@@ -18,4 +50,45 @@ body {
   .react-datepicker-popper {
     transform: translate3d(0px, 30px, 0px)!important;
   }
+}
+
+.layout {
+  & > div {
+    display: inline-block;
+    vertical-align: top;
+  }
+}
+
+#log {
+  border: 1px solid #aaa;
+  max-width: 650px;
+  height: 190px;
+  overflow-y: scroll;
+  padding: 4px 6px;
+  & > div {
+    margin-top: 2px;
+    word-break: break-all;
+    word-wrap: break-word;
+    span ~ span {
+      margin-left: 5px;
+    }
+  }
+}
+
+.selected-item {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 0 4px;
+  height: 18px;
+  line-height: 18px;
+  border: 1px solid red;
+  border-radius: 2px;
+  button {
+    border: none;
+    color: blue;
+  }
+}
+
+.margin {
+  margin-bottom: 5px;
 }

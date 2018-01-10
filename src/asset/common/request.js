@@ -6,10 +6,18 @@ export default function(url, option = {}) {
     option = url;
     url = option.url;
   }
-  option.headers = {
-    'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-    ...option.headers,
+
+  option = {
+    credentials: 'include',
+    ...option,
   };
+
+  if (option.method === 'POST') {
+    option.headers = {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+      ...option.headers,
+    };
+  }
 
   if (typeof option.data === 'object') {
     const param = querystring.stringify(option.data);

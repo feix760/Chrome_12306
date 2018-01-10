@@ -1,6 +1,6 @@
 const path = require('path');
-const chalk = require('chalk');
 const webpack = require('webpack');
+const chalk = require('chalk');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -12,6 +12,7 @@ module.exports = {
   entry: {
     'index': './src/page/index/index.js'
   },
+  devtool: 'cheap-module-source-map',
   resolve: {
     alias: {
       asset: path.join(__dirname, 'src/asset'),
@@ -51,7 +52,7 @@ module.exports = {
         }),
       },
       {
-        test: /\.(png|svg|jpg|gif)$/,
+        test: /\.(png|svg|jpg|jpeg|gif|wav|mp4)$/,
         use: {
           loader: 'url-loader',
           options: {

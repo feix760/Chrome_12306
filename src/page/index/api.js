@@ -2,13 +2,32 @@
 import request from 'asset/common/request';
 
 const api = {
-  checkRandCode(isLogin, randCode) {
+  checkLoginRandCode({ randCode }) {
+    return request({
+        url: 'https://kyfw.12306.cn/passport/captcha/captcha-check',
+        method: 'POST',
+        data: {
+          login_site: 'E',
+          rand: 'sjrand',
+          answer: randCode,
+        },
+      })
+      .then(data => {
+        if (data && data.data && data.data.result === '1') {
+          return data.data;
+        } else {
+          return Promise.reject(data);
+        }
+      });
+  },
+
+  checkRandCode({ isSubmit, randCode }) {
     return request({
         url: 'https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn',
         method: 'POST',
         data: {
           _json_att: '',
-          rand: isLogin ? 'sjrand' : 'randp',
+          rand: isSubmit ? 'randp' : 'sjrand',
           randCode,
         },
       })
@@ -28,6 +47,7 @@ const api = {
   checkUser() {
     return request({
         url: 'https://kyfw.12306.cn/otn/index/initMy12306',
+        redirect: 'error',
         dataType: 'html',
       })
       .then(data => {
@@ -38,13 +58,13 @@ const api = {
       });
   },
 
-  login(user, pwd, randCode) {
+  login({ account, password, randCode }) {
     return request({
         url: 'https://kyfw.12306.cn/otn/login/loginAysnSuggest',
         method: 'POST',
         data: {
-          'loginUserDTO.user_name': user,
-          'userDTO.password': pwd,
+          'loginUserDTO.user_name': account,
+          'userDTO.password': password,
           randCode,
         },
       })
@@ -67,7 +87,7 @@ const api = {
       })
       .then(data => {
         if (data && data.data && data.data.normal_passengers) {
-          return data.data.normal_passengers;
+          return data.data.normal_passengers || [];
         } else {
           return Promise.reject(data);
         }
@@ -99,6 +119,7 @@ const api = {
         url: `https://kyfw.12306.cn/otn/${queryUrl}?${params}`,
         timeout: 5000,
         headers: {
+          'X-Requested-With': 'XMLHttpRequest',
           '_$Referer': 'https://kyfw.12306.cn/otn/leftTicket/init',
         },
       })
@@ -109,7 +130,7 @@ const api = {
             return {
               id: fields[0],
               button: fields[1],
-              train: fields[3],
+              name: fields[3], // 车次号
               rw: fields[23], // 软卧
               wz: fields[26], // 卧铺
               yw: fields[28], // 硬座
@@ -157,6 +178,18 @@ const api = {
   },
 
   submitOrderRequest(item, tour_flag, isStu) {
+    // secretStr:rGlW9Ul7Lbte0YySVnZDttvKs4Uo/LCyg/JVjY/OteQ7rOFgdEkrTlU7aDgNW4t13BAKoPE8Q+F0
+// lV/R93ftaaAED5gNm1Av1H1EfP6FvMo+Rb+7SzcszecQrh2b62J6viREc9T229nWwt1WsD/5Jci5
+// ImWWgkvtSvLMKPaJHL60fFlDaipZIzq5bZ8WWQBxfC3rSW+36TmrqF96moNE+tVwG13koIEtksNJ
+// 3OB0wmGyaveb0HyMIdJwclKKPvrbgGSgTJcTLr4=
+// train_date:2018-01-10
+// back_train_date:2018-01-10
+// tour_flag:dc
+// purpose_codes:ADULT
+// query_from_station_name:南昌
+// query_to_station_name:广州
+// undefined:
+    //
     const DATA_P = 'YYYY-MM-DD';
     return request({
         url: 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest',
@@ -208,6 +241,15 @@ const api = {
   },
 
   checkOrderInfo(ps, oldps, tour_flag, code = '') {
+    // cancel_flag:2
+// bed_level_order_num:000000000000000000000000000000
+// passengerTicketStr:3,0,1,袁飞翔,1,36220219910701281X,18576697703,N
+// oldPassengerStr:袁飞翔,1,36220219910701281X,1_
+// tour_flag:dc
+// randCode:
+// whatsSelect:1
+// _json_att:
+// REPEAT_SUBMIT_TOKEN:23c345b5c3dfbc587c4d1abfb9ac7249
     return request({
         url: 'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo',
         method: 'POST',

@@ -1,11 +1,8 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import DatePicker from 'react-datepicker';
-import moment from 'moment';
-import StationAutocomplete from '../stationAutocomplete';
-import { INPUT_UPDATE } from '../../action/input';
-import 'react-datepicker/dist/react-datepicker.css';
+import { loginCheck, loginPost, logoutPost } from '../../action/login';
+import Checkcode from '../checkcode';
 import './index.scss';
 
 class Component extends React.Component {
@@ -15,42 +12,67 @@ class Component extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.props.loginCheck();
+    setInterval(() => {
+      this.props.loginCheck();
+    }, 10000);
+  }
+
+  login = () => {
+    const { account, password } = this.props.input;
+    if (!account || !password) {
+      return Promise.reject();
+    }
+
+    return this.refs.checkcode.getCheckedRandCode()
+      .then(randCode => {
+        return this.props.loginPost({
+          account,
+          password,
+          randCode,
+        });
+      });
+  }
+
+  logout = () => {
+    return this.props.logoutPost();
+  }
+
   render() {
     const { props } = this;
-    const { input } = props;
+    const { input, login } = props;
     return (
-      <section className="account-input">
-        <span>发站:</span>
-        <StationAutocomplete value={input.from} onChange={props.update('from')} />
-        <span>&lt;&gt;</span>
-        <span>到站:</span>
-        <StationAutocomplete value={input.to} onChange={props.update('to')} />
-        <span>日期:</span>
-        <div className="date-picker-wrap">
-          <DatePicker selected={input.date} onChange={props.update('date')}
-            locale="zh-cn"
-            minDate={moment()}
-            maxDate={moment().add(30, 'days')} />
+      <section className="login-container">
+        <div className="margin">
+          登陆验证码:
+          { !login.hasLogin ? <button type="button" onClick={this.login}>请登陆</button> : null }
+          { login.hasLogin ? <button type="button" onClick={this.logout}>退出登陆</button> : null }
         </div>
+        <Checkcode ref="checkcode" />
       </section>
     );
   }
 }
 
-export default connect(({ input }) => {
+export default connect(({
+  input,
+  login,
+}) => {
   return {
     input,
+    login,
   }
 }, (dispatch) => {
   return {
-    update(field) {
-      return data => {
-        dispatch({
-          type: INPUT_UPDATE,
-          field: field,
-          value: data.target ? data.target.value : data,
-        });
-      }
-    }
-  }
+    loginCheck() {
+      return dispatch(loginCheck());
+    },
+    loginPost(data) {
+      return dispatch(loginPost(data));
+    },
+    logoutPost() {
+      return dispatch(logoutPost());
+    },
+  };
 })(Component);

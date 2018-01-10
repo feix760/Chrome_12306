@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
+import api from '../../api';
 import './index.scss';
 
-class Component extends React.Component {
+export default class Component extends React.Component {
   constructor() {
     super(...arguments);
     this.state = {
@@ -19,11 +20,11 @@ class Component extends React.Component {
   }
 
   refresh = () => {
-    const param = this.props.isSubmit
-      ? 'module=passenger&rand=randp'
-      : 'module=login&rand=sjrand';
+    const url = this.props.isSubmit
+      ? `https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp&${Math.random()}`
+      : `https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&${Math.random()}`;
     this.setState({
-      url: `https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?${param}&_=${Math.random()}`,
+      url,
       points: [],
     });
   }
@@ -53,12 +54,20 @@ class Component extends React.Component {
     });
   }
 
-  get value() {
-    const list = [];
+  getCheckedRandCode() {
+    const { isSubmit } = this.props;
+    let list = [];
     this.state.points.forEach(item => {
       list = list.concat([ item.x, item.y ]);
     });
-    return list.join(',');
+    const randCode = list.join(',');
+    return api[ isSubmit ? 'checkRandCode' : 'checkLoginRandCode' ]({
+        isSubmit,
+        randCode,
+      })
+      .then(() => {
+        return randCode;
+      });
   }
 
   render() {
@@ -90,9 +99,3 @@ class Component extends React.Component {
     );
   }
 }
-
-export default connect(({ input }) => {
-  return { };
-}, (dispatch) => {
-  return { };
-})(Component);
