@@ -25,7 +25,7 @@ function getPassengerInfo(seat, passengerList) {
   };
 }
 
-async function submit(dispatch, getState) {
+async function prepareSubmit(dispatch, getState) {
   const { input, order } = getState();
   const { train, seat, tourFlag } = order;
 
@@ -58,9 +58,21 @@ async function submit(dispatch, getState) {
 
   if (checkOrderInfo.ifShowPassCode === 'Y') {
     console.log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
+    dispatch({
+      type: ORDER_STATUS,
+      data: 'read-checkcode',
+    });
+  } else {
+    await confirmSingleForQueue(dispatch, getState);
   }
+}
+
+async function confirmSingleForQueue(dispatch, getState) {
+  const { order } = getState();
+  const { train, submitToken, keyChange, passengerTicketStr, oldPassengerStr, randCode } = order;
 
   await api.confirmSingleForQueue({
+    randCode,
     train,
     submitToken,
     keyChange,
@@ -125,7 +137,7 @@ async function query(dispatch, getState) {
         startAt: Date.now(),
       },
     });
-    await submit(dispatch, getState);
+    await prepareSubmit(dispatch, getState);
     return true;
   }
 
@@ -180,8 +192,11 @@ export function stopQuery() {
 export function submitOrder(randCode) {
   return (dispatch, getState) => {
     dispatch({
-      type: ORDER_STATUS,
-      data: 'success',
+      type: ORDER_UPDATE_ATTR,
+      data: {
+        randCode,
+      },
     });
+    return confirmSingleForQueue(dispatch, getState);
   };
 }

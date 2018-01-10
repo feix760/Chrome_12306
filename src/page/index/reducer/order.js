@@ -15,11 +15,18 @@ const defaultState = {
   submitToken: '',
   passengerTicketStr: '',
   oldPassengerStr: '',
+  randCode: '',
 };
 
 function fn(state = defaultState, { type, data }) {
   switch(type) {
     case ORDER_STATUS:
+      if (data === 'query') {
+        // 重置数据
+        state = {
+          ...defaultState,
+        };
+      }
       state = {
         ...state,
         status: data,
