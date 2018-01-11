@@ -5968,25 +5968,30 @@ async function getQueueCount(dispatch, getState) {
   const counts = queueCount.ticket.split(',');
   let str = `余票: ${counts[0]}张${counts[1] ? ' 无座: ' + counts[1] + '张' : ''} 排队人数: ${queueCount.countT}`;
   if (!counts[0] || queueCount.op_2 === 'true') {
-    str += ' 目前排队人数已经超过余票张数，请您选择其他席别或车次。';
     str += ` 耗时: ${(Date.now() - startAt) / 1000}s`;
+    str += ' 目前排队人数已经超过余票张数，请您选择其他席别或车次。';
     dispatch({
       type: ORDER_STATUS,
       data: 'stop'
     });
-    return false;
+    __WEBPACK_IMPORTED_MODULE_1__log__["b" /* info */](str);
+    return true;
   }
   __WEBPACK_IMPORTED_MODULE_1__log__["b" /* info */](str);
-  return true;
 }
 
 async function confirmSingleForQueue(dispatch, getState) {
   const { order } = getState();
   const { train, submitToken, keyChange, passengerTicketStr, oldPassengerStr, randCode } = order;
 
-  const getQueueCountResult = await getQueueCount(dispatch, getState);
+  dispatch({
+    type: ORDER_STATUS,
+    data: 'submitting'
+  });
 
-  if (!getQueueCountResult) {
+  const hasStopped = await getQueueCount(dispatch, getState);
+
+  if (hasStopped) {
     return;
   }
 
@@ -6127,7 +6132,10 @@ function submitOrder(randCode) {
         randCode
       }
     });
-    return confirmSingleForQueue(dispatch, getState);
+    return confirmSingleForQueue(dispatch, getState).catch(err => {
+      __WEBPACK_IMPORTED_MODULE_1__log__["b" /* info */]('提交订单失败');
+      return Promise.reject(err);
+    });
   };
 }
 
@@ -47861,7 +47869,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
   constructor() {
     super(...arguments);
 
-    this.submitOrder = () => {
+    this.submitOrder = async () => {
       const { checkcode } = this.refs;
       if (!checkcode.getValue()) {
         __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('请输入验证码');
@@ -47872,17 +47880,24 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
         __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('已取消抢票');
         return;
       }
-      checkcode.getCheckedRandCode().catch(err => {
-        __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('验证码错误, 请重新输入');
-        this.refresh();
-        return Promise.reject(err);
-      }).then(randCode => {
+      if (this._checking) {
+        return;
+      }
+      this._checking = true;
+
+      try {
+        const randCode = await checkcode.getCheckedRandCode();
         __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('验证码正确, 提交订单中');
         this.props.dispatch(Object(__WEBPACK_IMPORTED_MODULE_3__action_order__["e" /* submitOrder */])(randCode));
-      });
+      } catch (err) {
+        __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('验证码错误, 请重新输入');
+        this.refresh();
+      }
+
+      this._checking = false;
     };
 
-    this.onLoad = base64 => {
+    this.onLoad = async base64 => {
       const { order } = this.props;
       if (order.status !== 'read-checkcode') {
         return;
@@ -47890,18 +47905,18 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       const { checkcode } = this.refs;
       const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
       if (OCREnable) {
-        checkcode.tryOCR({
-          OCRUrl,
-          OCRAK,
-          OCRSK,
-          base64
-        }).catch(err => {
-          __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */](`自动识别验证码失败`);
-          return Promise.reject(err);
-        }).then(randCode => {
+        try {
+          const randCode = await checkcode.tryOCR({
+            OCRUrl,
+            OCRAK,
+            OCRSK,
+            base64
+          });
           __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */](`自动识别验证码成功: ${randCode}`);
           this.props.dispatch(Object(__WEBPACK_IMPORTED_MODULE_3__action_order__["e" /* submitOrder */])(randCode));
-        });
+        } catch (err) {
+          __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */](`自动识别验证码失败`);
+        }
       }
     };
 

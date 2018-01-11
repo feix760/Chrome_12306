@@ -28,7 +28,7 @@ class Component extends React.Component {
     this.refs.checkcode.refresh();
   }
 
-  submitOrder = () => {
+  submitOrder = async () => {
     const { checkcode } = this.refs;
     if (!checkcode.getValue()) {
       Log.info('请输入验证码');
@@ -39,19 +39,24 @@ class Component extends React.Component {
       Log.info('已取消抢票');
       return;
     }
-    checkcode.getCheckedRandCode()
-      .catch(err => {
-        Log.info('验证码错误, 请重新输入');
-        this.refresh();
-        return Promise.reject(err);
-      })
-      .then(randCode => {
-        Log.info('验证码正确, 提交订单中');
-        this.props.dispatch(submitOrder(randCode));
-      });
+    if (this._checking) {
+      return;
+    }
+    this._checking = true;
+
+    try {
+      const randCode = await checkcode.getCheckedRandCode();
+      Log.info('验证码正确, 提交订单中');
+      this.props.dispatch(submitOrder(randCode));
+    } catch (err) {
+      Log.info('验证码错误, 请重新输入');
+      this.refresh();
+    }
+
+    this._checking = false;
   }
 
-  onLoad = (base64) => {
+  onLoad = async base64 => {
     const { order } = this.props;
     if (order.status !== 'read-checkcode') {
       return;
@@ -59,20 +64,18 @@ class Component extends React.Component {
     const { checkcode } = this.refs;
     const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
     if (OCREnable) {
-      checkcode.tryOCR({
+      try {
+        const randCode = await checkcode.tryOCR({
           OCRUrl,
           OCRAK,
           OCRSK,
           base64,
-        })
-        .catch(err => {
-          Log.info(`自动识别验证码失败`);
-          return Promise.reject(err);
-        })
-        .then(randCode => {
-          Log.info(`自动识别验证码成功: ${randCode}`);
-          this.props.dispatch(submitOrder(randCode));
         });
+        Log.info(`自动识别验证码成功: ${randCode}`);
+        this.props.dispatch(submitOrder(randCode));
+      } catch (err) {
+        Log.info(`自动识别验证码失败`);
+      }
     }
   }
 

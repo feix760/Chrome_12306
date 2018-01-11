@@ -99,25 +99,30 @@ async function getQueueCount(dispatch, getState) {
   const counts = queueCount.ticket.split(',');
   let str = `余票: ${counts[0]}张${counts[1] ? ' 无座: ' + counts[1] + '张' : ''} 排队人数: ${queueCount.countT}`;
   if (!counts[0] || queueCount.op_2 === 'true') {
-    str += ' 目前排队人数已经超过余票张数，请您选择其他席别或车次。';
     str += ` 耗时: ${(Date.now() - startAt) / 1000}s`;
+    str += ' 目前排队人数已经超过余票张数，请您选择其他席别或车次。';
     dispatch({
       type: ORDER_STATUS,
       data: 'stop',
     });
-    return false;
+    Log.info(str);
+    return true;
   }
   Log.info(str);
-  return true;
 }
 
 async function confirmSingleForQueue(dispatch, getState) {
   const { order } = getState();
   const { train, submitToken, keyChange, passengerTicketStr, oldPassengerStr, randCode } = order;
 
-  const getQueueCountResult = await getQueueCount(dispatch, getState);
+  dispatch({
+    type: ORDER_STATUS,
+    data: 'submitting',
+  });
 
-  if (!getQueueCountResult) {
+  const hasStopped = await getQueueCount(dispatch, getState);
+
+  if (hasStopped) {
     return;
   }
 
@@ -259,6 +264,10 @@ export function submitOrder(randCode) {
         randCode,
       },
     });
-    return confirmSingleForQueue(dispatch, getState);
+    return confirmSingleForQueue(dispatch, getState)
+      .catch(err => {
+        Log.info('提交订单失败');
+        return Promise.reject(err);
+      });
   };
 }
