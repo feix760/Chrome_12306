@@ -39253,7 +39253,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2_react_datepicker__["a" /* default */], { selected: input.date, onChange: props.update('date'),
           locale: 'zh-cn',
           minDate: __WEBPACK_IMPORTED_MODULE_3_moment___default()(),
-          maxDate: __WEBPACK_IMPORTED_MODULE_3_moment___default()().add(30, 'days') })
+          maxDate: __WEBPACK_IMPORTED_MODULE_3_moment___default()().add(29, 'days') })
       )
     );
   }
@@ -47935,7 +47935,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
         { className: 'margin' },
-        '\u63D0\u4EA4\u8BA2\u5355\u9A8C\u8BC1\u7801:',
+        '\u8BA2\u5355\u9A8C\u8BC1\u7801:',
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'button',
           { type: 'button', onClick: this.submitOrder },

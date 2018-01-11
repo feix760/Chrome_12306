@@ -61,7 +61,7 @@ class Component extends React.Component {
     return (
       <section className="submit-container">
         <div className="margin">
-          提交订单验证码:
+          订单验证码:
           <button type="button" onClick={this.submitOrder}>提交</button>
         </div>
         <Checkcode ref="checkcode" isSubmit={true} onSubmit={this.submitOrder}/>

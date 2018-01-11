@@ -36,7 +36,7 @@ class Component extends React.Component {
           <DatePicker selected={input.date} onChange={props.update('date')}
             locale="zh-cn"
             minDate={moment()}
-            maxDate={moment().add(30, 'days')} />
+            maxDate={moment().add(29, 'days')} />
         </div>
       </section>
     );
