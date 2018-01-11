@@ -48004,19 +48004,30 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
     };
 
     this.playMusic = () => {
-      this.setState({
-        playingMusic: true
-      });
-      this.refs.alert.play();
-      this.refs.alarm.play();
+      if (!this.state.playingMusic) {
+        this.setState({
+          playingMusic: true
+        });
+        this.refs.alert.play();
+        this.refs.alarm.play();
+
+        this._title = document.title;
+        this._titleInterval = setInterval(() => {
+          document.title = Math.random() + '';
+        }, 500);
+      }
     };
 
     this.stopMusic = () => {
-      this.setState({
-        playingMusic: false
-      });
-      this.refs.alert.pause();
-      this.refs.alarm.pause();
+      if (this.state.playingMusic) {
+        document.title = this._title;
+        clearInterval(this._titleInterval);
+        this.setState({
+          playingMusic: false
+        });
+        this.refs.alert.pause();
+        this.refs.alarm.pause();
+      }
     };
 
     this.state = {
