@@ -20,8 +20,8 @@ class Component extends React.Component {
           url: <input className="url" type="text" value={input.OCRUrl} onChange={props.update('OCRUrl')} />
         </div>
         <div>
-        百度云ak: <input type="text" value={input.OCRAK} onChange={props.update('OCRAK')} />
-        sk: <input type="text" value={input.OCRSK} onChange={props.update('OCRSK')} />
+        百度云Access Key: <input type="text" value={input.OCRAK} onChange={props.update('OCRAK')} />
+        Secret Key: <input type="text" value={input.OCRSK} onChange={props.update('OCRSK')} />
         </div>
       </section>
     );

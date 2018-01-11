@@ -47,6 +47,26 @@ class Component extends React.Component {
     return this.props.logoutPost();
   }
 
+  onLoad = (base64) => {
+    const { checkcode } = this.refs;
+    const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
+    if (OCREnable) {
+      checkcode.tryOCR({
+          OCRUrl,
+          OCRAK,
+          OCRSK,
+          base64,
+        })
+        .catch(err => {
+          Log.info(`自动识别验证码失败`);
+          return Promise.reject(err);
+        })
+        .then(randCode => {
+          Log.info(`自动识别验证码成功: ${randCode}`);
+        });
+    }
+  }
+
   render() {
     const { props } = this;
     const { input, login } = props;
@@ -57,7 +77,7 @@ class Component extends React.Component {
           { !login.hasLogin ? <button type="button" onClick={this.login}>请登陆</button> : null }
           { login.hasLogin ? <button type="button" onClick={this.logout}>退出登陆</button> : null }
         </div>
-        <Checkcode ref="checkcode" onSubmit={!login.hasLogin && this.login}/>
+        <Checkcode ref="checkcode" onSubmit={!login.hasLogin && this.login} onLoad={this.onLoad}/>
       </section>
     );
   }

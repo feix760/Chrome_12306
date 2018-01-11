@@ -2,6 +2,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import domtoimage from 'dom-to-image';
+import request from 'asset/common/request';
 import api from '../../api';
 import './index.scss';
 
@@ -90,6 +91,26 @@ export default class Component extends React.Component {
       .then(base64 => {
         this.props.onLoad && this.props.onLoad(base64);
       });
+  }
+
+  tryOCR({ OCRUrl, OCRAK, OCRSK, base64 }) {
+    return request({
+      url: OCRUrl,
+      method: 'POST',
+      data: {
+        ak: OCRAK,
+        sk: OCRSK,
+        img: base64,
+      },
+    }).then(data => {
+      if (data && data.retCode === 0 && data.result.length) {
+        Log.info('自动识别验证码成功');
+        return data.result.join(',');
+        this.props.dispatch(submitOrder(data.result.join(',')));
+      } else {
+        return Promise.reject(data);
+      }
+    });
   }
 
   render() {

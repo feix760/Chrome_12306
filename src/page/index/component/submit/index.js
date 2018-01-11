@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import request from 'asset/common/request';
 import Checkcode from '../checkcode';
 import { submitOrder } from '../../action/order';
 import * as Log from '../../log';
@@ -52,21 +51,23 @@ class Component extends React.Component {
     if (order.status !== 'read-checkcode') {
       return;
     }
+    const { checkcode } = this.refs;
     const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
     if (OCREnable) {
-      request({
-        url: OCRUrl,
-        data: {
-          ak: OCRAK,
-          sk: OCRSK,
-          img: base64,
-        }
-      }).then(data => {
-        if (data && data.retCode === 0 && data.result.length) {
-          Log.info('自动识别验证码成功');
-          this.props.dispatch(submitOrder(data.result.join(',')));
-        }
-      });
+      checkcode.tryOCR({
+          OCRUrl,
+          OCRAK,
+          OCRSK,
+          base64,
+        })
+        .catch(err => {
+          Log.info(`自动识别验证码失败`);
+          return Promise.reject(err);
+        })
+        .then(randCode => {
+          Log.info(`自动识别验证码成功: ${randCode}`);
+          this.props.dispatch(submitOrder(randCode));
+        });
     }
   }
 
