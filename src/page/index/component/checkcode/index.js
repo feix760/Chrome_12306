@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
+import domtoimage from 'dom-to-image';
 import api from '../../api';
 import './index.scss';
 
@@ -54,19 +55,40 @@ export default class Component extends React.Component {
     });
   }
 
-  getCheckedRandCode() {
-    const { isSubmit } = this.props;
+  getValue() {
     let list = [];
     this.state.points.forEach(item => {
       list = list.concat([ item.x, item.y ]);
     });
-    const randCode = list.join(',');
+    return list.join(',');
+  }
+
+  getCheckedRandCode() {
+    const { isSubmit, submitToken } = this.props;
+    const randCode = this.getValue();
+    if (!randCode) {
+      return Promise.reject();
+    }
     return api[ isSubmit ? 'checkRandCode' : 'checkLoginRandCode' ]({
         isSubmit,
         randCode,
+        submitToken,
       })
       .then(() => {
         return randCode;
+      });
+  }
+
+  submit = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.props.onSubmit && this.props.onSubmit();
+  }
+
+  onLoad = e => {
+    domtoimage.toPng(e.target)
+      .then(base64 => {
+        this.props.onLoad && this.props.onLoad(base64);
       });
   }
 
@@ -77,9 +99,9 @@ export default class Component extends React.Component {
         {
           state.url && (
             <div>
-              <img src={state.url} />
+              <img refs="img" src={state.url} onLoad={this.onLoad}/>
               <div className="refresh-area" onClick={this.refresh}>刷新</div>
-              <div className="click-area" onClick={this.addPoint}>
+              <div className="click-area" onClick={this.addPoint} onContextMenu={this.submit}>
                 {
                   state.points.map(item => (
                     <div className="point" key={item.x + '-' + item.y}

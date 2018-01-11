@@ -17,6 +17,14 @@ class Component extends React.Component {
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { order } = this.props;
+    const { order: nextOrder } = nextProps;
+    if (nextOrder.status === 'submit' && nextOrder.status !== order.status) {
+      this.playMusic();
+    }
+  }
+
   startQuery = () => {
     this.props.dispatch(startQuery());
   }
@@ -51,8 +59,8 @@ class Component extends React.Component {
     return (
       <section className="action-area-container">
         <span>查询间隔:</span>
-        <input type="text" value={input.duration} onChange={props.update('duration')}/>毫秒
-        <input type="checkbox" checked={input.queryStudent} onChange={props.update('input.queryStudent')}/>学生票
+        <input type="text" value={input.duration} onChange={props.update('duration')}/> 毫秒
+        <input type="checkbox" checked={input.queryStudent} onChange={props.update('queryStudent')}/> 学生票
         <button type="button" onClick={this.startQuery}>开始查询</button>
         <button type="button" onClick={this.stopQuery}>停止查询</button>
         <button type="button" onClick={this.clearLog}>清除日志</button>
@@ -72,8 +80,10 @@ class Component extends React.Component {
 export default connect(
   ({
     input,
+    order,
   }) => ({
     input,
+    order,
   }),
   dispatch => ({
     dispatch,

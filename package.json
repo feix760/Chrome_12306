@@ -9,13 +9,14 @@
     "server": "node index.js"
   },
   "dependencies": {
+    "dom-to-image": "^2.6.0",
     "moment": "^2.20.1",
     "querystring": "^0.2.0",
     "react": "^16.2.0",
-    "react-dom": "^16.2.0",
     "react-addons-shallow-compare": "^15.6.2",
     "react-autocomplete": "^1.7.2",
     "react-datepicker": "^1.0.4",
+    "react-dom": "^16.2.0",
     "react-redux": "^5.0.6",
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0"

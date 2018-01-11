@@ -1,5 +1,6 @@
 
 import api from '../api';
+import * as Log from '../log';
 
 export const ORDER_STATUS = 'ORDER_STATUS';
 
@@ -37,7 +38,21 @@ async function prepareSubmit(dispatch, getState) {
 
   const { submitToken, keyChange } = await api.initDc();
 
+  if (!input.passengerList.length) {
+    Log.info('请选择乘客！');
+    dispatch({
+      type: ORDER_STATUS,
+      data: 'stop',
+    });
+    return;
+  }
+
   const { passengerTicketStr, oldPassengerStr } = getPassengerInfo(seat, input.passengerList);
+
+  Log.info({
+    passengerTicketStr,
+    oldPassengerStr,
+  });
 
   const checkOrderInfo = await api.checkOrderInfo({
     submitToken,
@@ -57,12 +72,13 @@ async function prepareSubmit(dispatch, getState) {
   });
 
   if (checkOrderInfo.ifShowPassCode === 'Y') {
-    console.log('请立刻输入 验证码2 ，验证码输入正确后将自动提交订单');
+    Log.info('请立刻输入 订单验证码，验证码输入正确后将自动提交订单');
     dispatch({
       type: ORDER_STATUS,
       data: 'read-checkcode',
     });
   } else {
+    Log.info('无需输入验证码，自动提交订单...');
     await confirmSingleForQueue(dispatch, getState);
   }
 }
@@ -84,6 +100,8 @@ async function confirmSingleForQueue(dispatch, getState) {
     type: ORDER_STATUS,
     data: 'success',
   });
+
+  Log.info(`提交订单成功，耗时: ${(Date.now() - order.startAt) / 1000}s，请点击查看订单前往12306完成付款。`);
 }
 
 async function query(dispatch, getState) {
@@ -96,16 +114,24 @@ async function query(dispatch, getState) {
   const queryUrl = await api.getQueryUrl();
 
   if (!input.from || !input.to || !input.date) {
-    console.log('请选择发站、到站、日期');
+    Log.info('请选择发站、到站、日期');
     return false;
   }
 
-  const allTrain = await api.query({
-    queryUrl,
-    from: input.from.code,
-    to: input.to.code,
-    date: input.date.format('YYYY-MM-DD'),
-  });
+  Log.info(`${input.date.format('MM-DD')} 查询${input.queryStudent ? '学生' : '成人'}票..`);
+
+  let allTrain;
+  try {
+    allTrain = await api.query({
+      queryUrl,
+      from: input.from.code,
+      to: input.to.code,
+      date: input.date.format('YYYY-MM-DD'),
+    });
+  } catch (err) {
+    Log.info('query fail');
+    return false;
+  }
 
   let okTrain;
   allTrain.forEach(item => {
@@ -113,8 +139,9 @@ async function query(dispatch, getState) {
     return input.trainList.forEach(({ train, seat }) => {
       if (item.name === train.name) {
         if (!hasLogTrain) {
-          console.log(item);
           hasLogTrain = true;
+          Log.info(`${input.date.format('MM-DD')} ${item.name}：${item.button}`);
+          Log.info(`硬座：${item.yz} 无座：${item.wz} 硬卧：${item.yw} 软卧：${item.rw} 二等座：${item.ze} 一等座：${item.zy}`);
         }
         const count = item[seat.key];
         if (count && (count === '有' || !isNaN(count))) {
@@ -134,6 +161,7 @@ async function query(dispatch, getState) {
       type: ORDER_UPDATE_ATTR,
       data: {
         ...okTrain,
+        status: 'submit',
         startAt: Date.now(),
       },
     });
@@ -162,12 +190,12 @@ export function startQuery() {
         try {
           stop = await query(dispatch, getState);
         } catch (err) {
-          console.log(err);
-          stop = true;
           dispatch({
             type: ORDER_STATUS,
             data: 'fail',
           });
+          console.log(err);
+          Log.info('系统异常');
         }
 
         if (stop) {
@@ -182,6 +210,7 @@ export function startQuery() {
 
 export function stopQuery() {
   return (dispatch, getState) => {
+    Log.info('停止查询');
     dispatch({
       type: ORDER_STATUS,
       data: 'stop',

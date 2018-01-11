@@ -14,6 +14,7 @@ import Checkcode from './component/checkcode';
 import Login from './component/login';
 import Submit from './component/submit';
 import ActionArea from './component/actionArea';
+import OCR from './component/OCR';
 import './index.scss';
 
 class Component extends React.Component {
@@ -29,6 +30,7 @@ class Component extends React.Component {
         <TripInput />
         <TrainSelect />
         <PassengerSelect />
+        <OCR />
         <Clock />
         <div className="layout">
           <div>

@@ -14,15 +14,15 @@ const api = {
         },
       })
       .then(data => {
-        if (data && data.data && data.data.result === '1') {
-          return data.data;
+        if (data && data.result_code === '4') {
+          return data;
         } else {
           return Promise.reject(data);
         }
       });
   },
 
-  checkRandCode({ isSubmit, randCode }) {
+  checkRandCode({ isSubmit, randCode, submitToken = '' }) {
     return request({
         url: 'https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn',
         method: 'POST',
@@ -30,6 +30,7 @@ const api = {
           _json_att: '',
           rand: isSubmit ? 'randp' : 'sjrand',
           randCode,
+          REPEAT_SUBMIT_TOKEN: submitToken,
         },
       })
       .then(data => {
@@ -60,13 +61,14 @@ const api = {
   },
 
   login({ account, password, randCode }) {
+
     return request({
-        url: 'https://kyfw.12306.cn/otn/login/loginAysnSuggest',
+        url: 'https://kyfw.12306.cn/passport/web/login',
         method: 'POST',
         data: {
-          'loginUserDTO.user_name': account,
-          'userDTO.password': password,
-          randCode,
+          username: account,
+          password,
+          appid: 'otnj',
         },
       })
       .then(data => {
@@ -137,13 +139,13 @@ const api = {
               leftTicketStr: fields[12],
               locationCode: fields[15],
               date: fields[13],
-              rw: fields[23], // 软卧
-              wz: fields[26], // 卧铺
-              yw: fields[28], // 硬座
-              yz: fields[29], // 硬座
-              zs: fields[32], // 商务座
-              zy: fields[31], // 一等座
-              ze: fields[30], // 二等座
+              rw: fields[23] || '-', // 软卧
+              wz: fields[26] || '-', // 卧铺
+              yw: fields[28] || '-', // 硬座
+              yz: fields[29] || '-', // 硬座
+              zs: fields[32] || '-', // 商务座
+              zy: fields[31] || '-', // 一等座
+              ze: fields[30] || '-', // 二等座
               fields,
             };
           });

@@ -6,6 +6,9 @@ const getId = () => ('0000000000' + (++id)).match(/[\w]{6}$/)[0];
 const getEl = () => document.querySelector('#log');
 
 function appendMsg(msg) {
+  if (typeof msg === 'object') {
+    msg = JSON.stringify(msg);
+  }
   const $el = getEl();
   const $line = document.createElement('div');
   const $id = document.createElement('span');
