@@ -60,7 +60,7 @@ const api = {
         if (data && !data.match(/var sessionInit = '([^']+)';/)) {
           return Promise.reject(data);
         }
-        return data;
+        return true;
       });
   },
 
@@ -136,10 +136,13 @@ const api = {
             const fields = item.split('|');
             return {
               button: fields[1],
+              no: fields[2], // 车次号
               name: fields[3], // 车次号
               secretStr: fields[0],
               fromStationName: fields[6],
               toStationName: fields[7],
+              fromStationTelecode: fields[6],
+              toStationTelecode: fields[7],
               leftTicketStr: fields[12],
               locationCode: fields[15],
               date: fields[13],
@@ -162,22 +165,22 @@ const api = {
       });
   },
 
-  getQueueCount(item, seatType) {
-    var trainInfo = item.queryLeftNewDTO;
+  getQueueCount({ train, submitToken, seatType }) {
     return request({
         url: 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
         method: 'POST',
         data: {
-          train_date: trainInfo.start_train_date,
-          train_no: trainInfo.train_no,
-          stationTrainCode: trainInfo.station_train_code,
-          seatType: seatType,
-          fromStationTelecode: trainInfo.from_station_telecode,
-          toStationTelecode: trainInfo.to_station_telecode,
-          leftTicket: trainInfo.yp_info,
+          train_date: moment(train.date, 'YYYYMMDD').toDate().toString(),
+          train_no: train.no,
+          stationTrainCode: train.name,
+          seatType,
+          fromStationTelecode: train.fromStationTelecode,
+          toStationTelecode: train.toStationTelecode,
+          leftTicket: train.leftTicketStr,
+          train_location: train.locationCode,
           purpose_codes: '00',
           _json_att: '',
-          REPEAT_SUBMIT_TOKEN: context.submitToken,
+          REPEAT_SUBMIT_TOKEN: submitToken,
         },
       })
       .then(data => {

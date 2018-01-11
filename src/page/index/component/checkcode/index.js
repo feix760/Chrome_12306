@@ -15,10 +15,8 @@ export default class Component extends React.Component {
     };
   }
 
-  componentDidMount() {
-    if (!this.props.isSubmit) {
-      this.refresh();
-    }
+  hasUrl() {
+    return !!this.state.url;
   }
 
   refresh = () => {

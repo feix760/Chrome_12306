@@ -14,10 +14,18 @@ class Component extends React.Component {
   }
 
   componentDidMount() {
-    this.props.loginCheck();
-    setInterval(() => {
-      this.props.loginCheck();
-    }, 10000);
+    this.checkUser();
+    setInterval(this.checkUser, 10000);
+  }
+
+  checkUser = () => {
+    this.props.loginCheck()
+      .catch(() => {
+        const { checkcode } = this.refs;
+        if (!checkcode.hasUrl()) {
+          checkcode.refresh();
+        }
+      });
   }
 
   login = () => {

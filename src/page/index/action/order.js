@@ -6,7 +6,7 @@ export const ORDER_STATUS = 'ORDER_STATUS';
 
 export const ORDER_UPDATE_ATTR = 'ORDER_UPDATE_ATTR';
 
-function getPassengerInfo(seat, passengerList) {
+function getPassengerInfo(seatType, passengerList) {
   const passengerTicketArray = [];
   const oldPassengerArray = [];
   passengerList.forEach(item => {
@@ -15,7 +15,7 @@ function getPassengerInfo(seat, passengerList) {
       passenger_name: name,
       passenger_id_no: id,
     } = item;
-    passengerTicketArray.push([ seat.seatType, 0, type, name, 1, id, '', 'N' ].join(','));
+    passengerTicketArray.push([ seatType, 0, type, name, 1, id, '', 'N' ].join(','));
     oldPassengerArray.push([ name, 1, id, type ].join(','));
   });
   return {
@@ -26,7 +26,9 @@ function getPassengerInfo(seat, passengerList) {
 
 async function prepareSubmit(dispatch, getState) {
   const { input, order } = getState();
-  const { train, seat, tourFlag } = order;
+  const { train, tourFlag, seat } = order;
+
+  Log.info(`发现有票车: ${train.name} ${seat.name} ${train[seat.key]} 准备提交中...`);
 
   await api.submitOrderRequest({
     train,
@@ -45,7 +47,7 @@ async function prepareSubmit(dispatch, getState) {
     return;
   }
 
-  const { passengerTicketStr, oldPassengerStr } = getPassengerInfo(seat, input.passengerList);
+  const { passengerTicketStr, oldPassengerStr } = getPassengerInfo(seat.seatType, input.passengerList);
 
   Log.info({
     passengerTicketStr,
@@ -75,15 +77,49 @@ async function prepareSubmit(dispatch, getState) {
       type: ORDER_STATUS,
       data: 'read-checkcode',
     });
+
+    try {
+      await getQueueCount(dispatch, getState);
+    } catch (err) {
+    }
   } else {
     Log.info('无需输入验证码，自动提交订单...');
     await confirmSingleForQueue(dispatch, getState);
   }
 }
 
+async function getQueueCount(dispatch, getState) {
+  const { train, seat, submitToken, startAt } = getState().order;
+  const queueCount = await api.getQueueCount({
+    train,
+    submitToken,
+    seatType: seat.seatType,
+  });
+
+  const counts = queueCount.ticket.split(',');
+  let str = `余票: ${counts[0]}张${counts[1] ? ' 无座: ' + counts[1] + '张' : ''} 排队人数: ${queueCount.countT}`;
+  if (!counts[0] || queueCount.op_2 === 'true') {
+    str += ' 目前排队人数已经超过余票张数，请您选择其他席别或车次。';
+    str += ` 耗时: ${(Date.now() - startAt) / 1000}s`;
+    dispatch({
+      type: ORDER_STATUS,
+      data: 'stop',
+    });
+    return false;
+  }
+  Log.info(str);
+  return true;
+}
+
 async function confirmSingleForQueue(dispatch, getState) {
   const { order } = getState();
   const { train, submitToken, keyChange, passengerTicketStr, oldPassengerStr, randCode } = order;
+
+  const getQueueCountResult = await getQueueCount(dispatch, getState);
+
+  if (!getQueueCountResult) {
+    return;
+  }
 
   await api.confirmSingleForQueue({
     randCode,
@@ -99,7 +135,7 @@ async function confirmSingleForQueue(dispatch, getState) {
     data: 'success',
   });
 
-  Log.info(`提交订单成功，耗时: ${(Date.now() - order.startAt) / 1000}s，请点击查看订单前往12306完成付款。`);
+  Log.info(`提交订单成功，耗时: ${(Date.now() - order.startAt) / 1000}s，请点击 <a href="https://kyfw.12306.cn/otn/queryOrder/initNoComplete" target="_blank">查看订单</a> 前往12306完成付款。`);
 }
 
 async function query(dispatch, getState) {
