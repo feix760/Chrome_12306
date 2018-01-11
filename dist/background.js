@@ -2,24 +2,20 @@ const tabIds = {};
 const mainPage = chrome.extension.getURL('html/index.html');
 
 chrome.browserAction.onClicked.addListener(tab => {
-  chrome.tabs.query({
-    active: true,
-    currentWindow: true
-  }, (tabs) => {
-    const tab = tabs[0];
-    chrome.tabs.update(tab.id, {
-      url: mainPage
-    }, () => {
-
-    });
-  });
+  chrome.tabs.query(
+    {
+      active: true,
+      currentWindow: true
+    },
+    tabs => {
+      chrome.tabs.update(tabs[0].id, { url: mainPage });
+    }
+  );
 });
-
-const targetUrls = ['http://kyfw.12306.cn/*', "https://kyfw.12306.cn/*"];
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
-    if (tab.url === mainPage) {
+    if (tab.url && tab.url.indexOf(mainPage) === 0) {
       tabIds[tabId] = true;
     } else {
       tabIds[tabId] && delete tabIds[tabId];
@@ -27,59 +23,45 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
+const webRequestFilter ={
+  urls: ['http://kyfw.12306.cn/*', "https://kyfw.12306.cn/*"],
+};
+
 // 添加特殊请求头 _$Origin -> Origin
 chrome.webRequest.onBeforeSendHeaders.addListener(
-  (details) => {
-    const headers = details.requestHeaders;
+  ({ tabId, requestHeaders }) => {
     // 跳过非插件发出的请求
-    if (!tabIds[details.tabId]) {
-      return {
-        requestHeaders: headers
-      };
+    if (tabIds[tabId]) {
+      requestHeaders.slice().forEach(item => {
+        if (item.name.match(/^_\$(.+)/)) {
+          const name = RegExp.$1;
+          requestHeaders = requestHeaders.filter(item => item.name !== name);
+          item.name = name;
+        }
+      });
     }
-    const customHeaderNames = {};
-    headers.forEach((item) => {
-      if (item.name.indexOf('_$') === 0) {
-        const name = item.name.replace(/^_\$/, '');
-        customHeaderNames[name] = true;
-      }
-    });
-
-    const finalHeaders = [];
-    headers.forEach((item) => {
-      if (item.name.indexOf('_$') === 0) {
-        const name = item.name.replace(/^_\$/, '');
-        finalHeaders.push({
-          name: name,
-          value: item.value
-        });
-      } else if (!customHeaderNames[item.name]) {
-        finalHeaders.push(item);
-      }
-    });
 
     return {
-      requestHeaders: finalHeaders
+      requestHeaders,
     };
-  }, {
-    urls: targetUrls
-  }, ["blocking", "requestHeaders"]
+  },
+  webRequestFilter,
+  ['blocking', 'requestHeaders']
 );
 
+// 删除缓存头
 chrome.webRequest.onHeadersReceived.addListener(
-  (details) => {
+  ({ tabId, responseHeaders }) => {
     // 跳过非插件发出的请求
-    if (!tabIds[details.tabId]) {
-      return {
-        responseHeaders: headers
-      };
+    if (tabIds[tabId]) {
+      requestHeaders = responseHeaders.filter((item) => {
+        return item.name !== 'Expires';
+      });
     }
     return {
-      responseHeaders: details.responseHeaders.filter((item) => {
-        return item.name !== 'Expires';
-      })
+      responseHeaders,
     };
-  }, {
-    urls: targetUrls
-  }, ["blocking", "responseHeaders"]
+  },
+  webRequestFilter,
+  ['blocking', 'responseHeaders']
 );
