@@ -1,5 +1,7 @@
 {
   "name": "Chrome-12306",
+  "version": "2.0.0",
+  "description": "Chrome extension for 12306",
   "keywords": [
     "12306",
     "chrome extension"

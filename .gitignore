@@ -3,7 +3,6 @@
 .settings
 *.log
 *tmp
-/dist
 /node_modules
 /server/img/
 /server/test.js

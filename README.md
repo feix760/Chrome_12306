@@ -2,6 +2,8 @@
 
 ## 开发
 
+首先你应该具备`Web前端`和[Node](https://nodejs.org/en/)开发的能力
+
 ```sh
 npm install
 ```
