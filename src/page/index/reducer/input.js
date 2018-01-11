@@ -12,6 +12,7 @@ const defaultState = {
   passengerList: [], // 选择的购票人员列表
   duration: 200, // 查询间隔
   queryStudent: false, // 是否查询学生票
+  queryUrl: 'leftTicket/queryZ',
 
   OCREnable: false,
   OCRUrl: 'http://localhost:8101/recognize',

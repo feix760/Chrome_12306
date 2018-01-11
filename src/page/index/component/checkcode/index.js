@@ -59,7 +59,7 @@ export default class Component extends React.Component {
   getValue() {
     let list = [];
     this.state.points.forEach(item => {
-      list = list.concat([ item.x, item.y ]);
+      list = list.concat([ item.x + 5, item.y + 10 ]);
     });
     return list.join(',');
   }
@@ -87,10 +87,11 @@ export default class Component extends React.Component {
   }
 
   onLoad = e => {
-    domtoimage.toPng(e.target)
-      .then(base64 => {
-        this.props.onLoad && this.props.onLoad(base64);
-      });
+    // 这里有bug
+    // domtoimage.toPng(e.target)
+      // .then(base64 => {
+        // this.props.onLoad && this.props.onLoad(base64);
+      // });
   }
 
   tryOCR({ OCRUrl, OCRAK, OCRSK, base64 }) {

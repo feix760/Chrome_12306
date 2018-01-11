@@ -36,14 +36,27 @@ class Component extends React.Component {
       return;
     }
 
-    const queryUrl = await api.getQueryUrl();
+    let allTrain;
 
-    const allTrain = await api.query({
-      queryUrl,
-      from: input.from.code,
-      to: input.to.code,
-      date: input.date.format('YYYY-MM-DD'),
-    });
+    try {
+      allTrain = await api.query({
+        queryUrl: input.queryUrl,
+        from: input.from.code,
+        to: input.to.code,
+        date: input.date.format('YYYY-MM-DD'),
+      });
+    } catch (err) {
+      const queryUrl = await api.getQueryUrl();
+
+      this.props.update('queryUrl')(queryUrl);
+
+      allTrain = await api.query({
+        queryUrl,
+        from: input.from.code,
+        to: input.to.code,
+        date: input.date.format('YYYY-MM-DD'),
+      });
+    }
 
     this.setState({
       allTrain,

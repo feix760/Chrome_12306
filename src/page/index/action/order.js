@@ -15,8 +15,6 @@ function getPassengerInfo(seat, passengerList) {
       passenger_name: name,
       passenger_id_no: id,
     } = item;
-    // passengerTicketStr:3,0,1,袁飞翔,1,36220219910701281X,18576697703,N
-    // oldPassengerStr:袁飞翔,1,36220219910701281X,1_
     passengerTicketArray.push([ seat.seatType, 0, type, name, 1, id, '', 'N' ].join(','));
     oldPassengerArray.push([ name, 1, id, type ].join(','));
   });
@@ -111,8 +109,6 @@ async function query(dispatch, getState) {
     return true;
   }
 
-  const queryUrl = await api.getQueryUrl();
-
   if (!input.from || !input.to || !input.date) {
     Log.info('请选择发站、到站、日期');
     return false;
@@ -122,6 +118,7 @@ async function query(dispatch, getState) {
 
   let allTrain;
   try {
+    const queryUrl = input.queryUrl;
     allTrain = await api.query({
       queryUrl,
       from: input.from.code,

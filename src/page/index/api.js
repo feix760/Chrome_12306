@@ -26,6 +26,10 @@ const api = {
     return request({
         url: 'https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn',
         method: 'POST',
+        headers: {
+          '_$Origin': 'https://kyfw.12306.cn',
+          '_$Referer': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
+        },
         data: {
           _json_att: '',
           rand: isSubmit ? 'randp' : 'sjrand',
