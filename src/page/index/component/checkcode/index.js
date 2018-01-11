@@ -6,7 +6,7 @@ import request from 'asset/common/request';
 import api from '../../api';
 import './index.scss';
 
-export default class Component extends React.Component {
+class Component extends React.Component {
   constructor() {
     super(...arguments);
     this.state = {
@@ -62,8 +62,22 @@ export default class Component extends React.Component {
     return list.join(',');
   }
 
+  setValue(list) {
+    const points = [];
+    for (let i = 0; i < list.length; i += 2) {
+      points.push({
+        x: list[i],
+        y: list[i + 1],
+      });
+    }
+    this.setState({
+      points,
+    });
+  }
+
   getCheckedRandCode() {
-    const { isSubmit, submitToken } = this.props;
+    const { isSubmit } = this.props;
+    const { submitToken } = this.props.order;
     const randCode = this.getValue();
     if (!randCode) {
       return Promise.reject();
@@ -71,7 +85,7 @@ export default class Component extends React.Component {
     return api[ isSubmit ? 'checkRandCode' : 'checkLoginRandCode' ]({
         isSubmit,
         randCode,
-        submitToken,
+        submitToken: isSubmit ? submitToken : '',
       })
       .then(() => {
         return randCode;
@@ -84,32 +98,38 @@ export default class Component extends React.Component {
     this.props.onSubmit && this.props.onSubmit();
   }
 
-  onLoad = e => {
-    // 这里有bug
-    // domtoimage.toPng(e.target)
-      // .then(base64 => {
-        // this.props.onLoad && this.props.onLoad(base64);
-      // });
-  }
+  onLoad = async e => {
+    return;
+    // 这里有bug 不能使用domtoimage他会请求验证码url导致重置
+    const base64 = await domtoimage.toPng(e.target);
 
-  tryOCR({ OCRUrl, OCRAK, OCRSK, base64 }) {
-    return request({
-      url: OCRUrl,
-      method: 'POST',
-      data: {
-        ak: OCRAK,
-        sk: OCRSK,
-        img: base64,
-      },
-    }).then(data => {
-      if (data && data.retCode === 0 && data.result.length) {
-        Log.info('自动识别验证码成功');
-        return data.result.join(',');
-        this.props.dispatch(submitOrder(data.result.join(',')));
-      } else {
-        return Promise.reject(data);
-      }
-    });
+    const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
+
+    if (!OCREnable) {
+      return;
+    }
+
+    let data;
+    try {
+      data = await request({
+        url: OCRUrl,
+        method: 'POST',
+        data: {
+          ak: OCRAK,
+          sk: OCRSK,
+          img: base64,
+        },
+      });
+    } catch (err) {
+    }
+
+    if (data && data.retCode === 0 && data.result.length) {
+      Log.info('自动识别验证码成功');
+      this.setValue(data.result);
+      this.props.onSubmit && this.props.onSubmit();
+    } else {
+      Log.info(`自动识别验证码失败`);
+    }
   }
 
   render() {
@@ -141,3 +161,17 @@ export default class Component extends React.Component {
     );
   }
 }
+
+export default connect(
+  ({
+    order,
+    input,
+  }) => ({
+    order,
+    input,
+  }),
+  dispatch => ({
+  }),
+  null,
+  { withRef: true }
+)(Component);

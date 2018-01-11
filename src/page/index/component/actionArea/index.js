@@ -82,6 +82,7 @@ class Component extends React.Component {
         { state.playingMusic && <button type="button" onClick={this.stopMusic}>停止声音</button> }
         <a target="_blank" href="https://kyfw.12306.cn/otn/">12306</a>
         <a target="_blank" href="https://kyfw.12306.cn/otn/queryOrder/initNoComplete">查看订单</a>
+        <a target="_blank" href="http://www.12306.cn/mormhweb/zxdt/201411/t20141126_2316.html">起售时间</a>
         <div className="alarm" style={{display: state.playingMusic ? '' : 'none'}}>
           <audio ref="alarm" src={alarmVideo} loop="loop"></audio>
           <audio ref="alert" src={alertVideo} loop="loop"></audio>

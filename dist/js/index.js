@@ -6189,7 +6189,38 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       this.props.onSubmit && this.props.onSubmit();
     };
 
-    this.onLoad = e => {};
+    this.onLoad = async e => {
+      return;
+
+      const base64 = await __WEBPACK_IMPORTED_MODULE_2_dom_to_image___default.a.toPng(e.target);
+
+      const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
+
+      if (!OCREnable) {
+        return;
+      }
+
+      let data;
+      try {
+        data = await Object(__WEBPACK_IMPORTED_MODULE_3_asset_common_request__["a" /* default */])({
+          url: OCRUrl,
+          method: 'POST',
+          data: {
+            ak: OCRAK,
+            sk: OCRSK,
+            img: base64
+          }
+        });
+      } catch (err) {}
+
+      if (data && data.retCode === 0 && data.result.length) {
+        Log.info('自动识别验证码成功');
+        this.setValue(data.result);
+        this.props.onSubmit && this.props.onSubmit();
+      } else {
+        Log.info(`自动识别验证码失败`);
+      }
+    };
 
     this.state = {
       url: '',
@@ -6224,8 +6255,22 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
     return list.join(',');
   }
 
+  setValue(list) {
+    const points = [];
+    for (let i = 0; i < list.length; i += 2) {
+      points.push({
+        x: list[i],
+        y: list[i + 1]
+      });
+    }
+    this.setState({
+      points
+    });
+  }
+
   getCheckedRandCode() {
-    const { isSubmit, submitToken } = this.props;
+    const { isSubmit } = this.props;
+    const { submitToken } = this.props.order;
     const randCode = this.getValue();
     if (!randCode) {
       return Promise.reject();
@@ -6233,29 +6278,9 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
     return __WEBPACK_IMPORTED_MODULE_4__api__["a" /* default */][isSubmit ? 'checkRandCode' : 'checkLoginRandCode']({
       isSubmit,
       randCode,
-      submitToken
+      submitToken: isSubmit ? submitToken : ''
     }).then(() => {
       return randCode;
-    });
-  }
-
-  tryOCR({ OCRUrl, OCRAK, OCRSK, base64 }) {
-    return Object(__WEBPACK_IMPORTED_MODULE_3_asset_common_request__["a" /* default */])({
-      url: OCRUrl,
-      method: 'POST',
-      data: {
-        ak: OCRAK,
-        sk: OCRSK,
-        img: base64
-      }
-    }).then(data => {
-      if (data && data.retCode === 0 && data.result.length) {
-        Log.info('自动识别验证码成功');
-        return data.result.join(',');
-        this.props.dispatch(submitOrder(data.result.join(',')));
-      } else {
-        return Promise.reject(data);
-      }
     });
   }
 
@@ -6288,8 +6313,14 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
     );
   }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Component;
 
+/* harmony default export */ __webpack_exports__["a"] = (Object(__WEBPACK_IMPORTED_MODULE_1_react_redux__["b" /* connect */])(({
+  order,
+  input
+}) => ({
+  order,
+  input
+}), dispatch => ({}), null, { withRef: true })(Component));
 
 /***/ }),
 /* 22 */
@@ -47735,7 +47766,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 
     this.checkUser = () => {
       this.props.loginCheck().catch(() => {
-        const { checkcode } = this.refs;
+        const checkcode = this.refs.checkcode.getWrappedInstance();
         if (!checkcode.hasUrl()) {
           checkcode.refresh();
         }
@@ -47749,7 +47780,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
         return Promise.reject();
       }
 
-      const { checkcode } = this.refs;
+      const checkcode = this.refs.checkcode.getWrappedInstance();
       if (!checkcode.getValue()) {
         __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('请输入验证码');
         return Promise.reject();
@@ -47766,24 +47797,6 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 
     this.logout = () => {
       return this.props.logoutPost();
-    };
-
-    this.onLoad = base64 => {
-      const { checkcode } = this.refs;
-      const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
-      if (OCREnable) {
-        checkcode.tryOCR({
-          OCRUrl,
-          OCRAK,
-          OCRSK,
-          base64
-        }).catch(err => {
-          __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */](`自动识别验证码失败`);
-          return Promise.reject(err);
-        }).then(randCode => {
-          __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */](`自动识别验证码成功: ${randCode}`);
-        });
-      }
     };
 
     this.state = {};
@@ -47815,7 +47828,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
           '\u9000\u51FA\u767B\u9646'
         ) : null
       ),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__checkcode__["a" /* default */], { ref: 'checkcode', onSubmit: !login.hasLogin && this.login, onLoad: this.onLoad })
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__checkcode__["a" /* default */], { ref: 'checkcode', onSubmit: !login.hasLogin && this.login })
     );
   }
 }
@@ -47870,7 +47883,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
     super(...arguments);
 
     this.submitOrder = async () => {
-      const { checkcode } = this.refs;
+      const checkcode = this.refs.checkcode.getWrappedInstance();
       if (!checkcode.getValue()) {
         __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('请输入验证码');
         return;
@@ -47897,29 +47910,6 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       this._checking = false;
     };
 
-    this.onLoad = async base64 => {
-      const { order } = this.props;
-      if (order.status !== 'read-checkcode') {
-        return;
-      }
-      const { checkcode } = this.refs;
-      const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
-      if (OCREnable) {
-        try {
-          const randCode = await checkcode.tryOCR({
-            OCRUrl,
-            OCRAK,
-            OCRSK,
-            base64
-          });
-          __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */](`自动识别验证码成功: ${randCode}`);
-          this.props.dispatch(Object(__WEBPACK_IMPORTED_MODULE_3__action_order__["e" /* submitOrder */])(randCode));
-        } catch (err) {
-          __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */](`自动识别验证码失败`);
-        }
-      }
-    };
-
     this.state = {};
   }
 
@@ -47934,7 +47924,8 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
   }
 
   refresh() {
-    this.refs.checkcode.refresh();
+    const checkcode = this.refs.checkcode.getWrappedInstance();
+    checkcode.refresh();
   }
 
   render() {
@@ -47951,8 +47942,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
           '\u63D0\u4EA4'
         )
       ),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__checkcode__["a" /* default */], { ref: 'checkcode', isSubmit: true, submitToken: this.props.order.submitToken,
-        onLoad: this.onLoad, onSubmit: this.submitOrder })
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__checkcode__["a" /* default */], { ref: 'checkcode', isSubmit: true, onSubmit: this.submitOrder })
     );
   }
 }
@@ -48109,6 +48099,11 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
         'a',
         { target: '_blank', href: 'https://kyfw.12306.cn/otn/queryOrder/initNoComplete' },
         '\u67E5\u770B\u8BA2\u5355'
+      ),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'a',
+        { target: '_blank', href: 'http://www.12306.cn/mormhweb/zxdt/201411/t20141126_2316.html' },
+        '\u8D77\u552E\u65F6\u95F4'
       ),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',

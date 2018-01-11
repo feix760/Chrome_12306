@@ -25,11 +25,12 @@ class Component extends React.Component {
   }
 
   refresh() {
-    this.refs.checkcode.refresh();
+    const checkcode = this.refs.checkcode.getWrappedInstance();
+    checkcode.refresh();
   }
 
   submitOrder = async () => {
-    const { checkcode } = this.refs;
+    const checkcode = this.refs.checkcode.getWrappedInstance();
     if (!checkcode.getValue()) {
       Log.info('请输入验证码');
       return;
@@ -56,29 +57,6 @@ class Component extends React.Component {
     this._checking = false;
   }
 
-  onLoad = async base64 => {
-    const { order } = this.props;
-    if (order.status !== 'read-checkcode') {
-      return;
-    }
-    const { checkcode } = this.refs;
-    const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
-    if (OCREnable) {
-      try {
-        const randCode = await checkcode.tryOCR({
-          OCRUrl,
-          OCRAK,
-          OCRSK,
-          base64,
-        });
-        Log.info(`自动识别验证码成功: ${randCode}`);
-        this.props.dispatch(submitOrder(randCode));
-      } catch (err) {
-        Log.info(`自动识别验证码失败`);
-      }
-    }
-  }
-
   render() {
     return (
       <section className="submit-container">
@@ -86,8 +64,7 @@ class Component extends React.Component {
           提交订单验证码:
           <button type="button" onClick={this.submitOrder}>提交</button>
         </div>
-        <Checkcode ref="checkcode" isSubmit={true} submitToken={this.props.order.submitToken}
-          onLoad={this.onLoad} onSubmit={this.submitOrder}/>
+        <Checkcode ref="checkcode" isSubmit={true} onSubmit={this.submitOrder}/>
       </section>
     );
   }
