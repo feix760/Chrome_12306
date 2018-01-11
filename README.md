@@ -18,6 +18,8 @@ Chrome打开[扩展程序管理页](chrome://extensions/), 勾选`开发者模�
 
 ## 验证码自动识别
 
+*现不支持使用, 需要等待升级接口*
+
 依靠[百度云ocr](http://bce.baidu.com/solution/image.html)和[百度图片](http://image.baidu.com/)
 
 `百度云ocr`需要用户认证信息(现阶段使用免费), 使用步骤如下: 

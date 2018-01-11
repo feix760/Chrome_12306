@@ -12,6 +12,10 @@ class Component extends React.Component {
     this.state = {};
   }
 
+  componentDidMount() {
+    // this.refresh();
+  }
+
   componentWillReceiveProps(nextProps) {
     const { order } = this.props;
     const { order: nextOrder } = nextProps;
@@ -42,6 +46,7 @@ class Component extends React.Component {
         return Promise.reject(err);
       })
       .then(randCode => {
+        Log.info('验证码正确, 提交订单中');
         this.props.dispatch(submitOrder(randCode));
       });
   }
