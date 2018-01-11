@@ -65,7 +65,6 @@ const api = {
   },
 
   login({ account, password, randCode }) {
-
     return request({
         url: 'https://kyfw.12306.cn/passport/web/login',
         method: 'POST',

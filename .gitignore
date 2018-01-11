@@ -3,6 +3,8 @@
 .settings
 *.log
 *tmp
+*.js.map
+*.css.map
 /node_modules
 /server/img/
 /server/test.js

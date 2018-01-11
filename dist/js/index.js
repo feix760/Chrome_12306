@@ -5207,7 +5207,6 @@ const api = {
   },
 
   login({ account, password, randCode }) {
-
     return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])({
       url: 'https://kyfw.12306.cn/passport/web/login',
       method: 'POST',
