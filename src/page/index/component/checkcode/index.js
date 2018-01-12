@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import domtoimage from 'dom-to-image';
+// import domtoimage from 'dom-to-image';
 import request from 'asset/common/request';
 import api from '../../api';
 import './index.scss';

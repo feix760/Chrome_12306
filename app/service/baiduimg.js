@@ -1,10 +1,13 @@
 
-const request = require('request-promise');
+const request = require('request-promise-native');
 
 exports.dutu = async ({ image }) => {
-  const upload = await request.post({
+  const client = request.defaults({ jar: true });
+
+  const upload = await client.post({
     url: 'http://image.baidu.com/pcdutu/a_upload?fr=html5&target=pcSearchImage&needJson=true',
     timeout: 5000,
+    json: true,
     formData: {
       pos: 'upload',
       uptype: 'upload_pc',
@@ -19,23 +22,30 @@ exports.dutu = async ({ image }) => {
     },
   });
 
-  console.log(upload);
-  const html = await request({
+  const html = await client({
     url: 'http://image.baidu.com/pcdutu',
     qs: {
-      // queryImageUrl: upload.url,
-      // querySign: upload.querySign,
-      queryImageUrl: 'http://b.hiphotos.baidu.com/image/%70%69%63/item/a1ec08fa513d269798e95b8c5efbb2fb4316d82d.jpg',
-      querySign: '313463570,4135500842',
+      queryImageUrl: upload.url,
+      querySign: upload.querySign,
       fm: 'index',
       uptype: 'upload_pc',
       result: 'result_camera',
-      vs: '99fbea2c8e9c2298fcb2838963cbaa3d0a3cbb56',
+      vs: '',
     },
   });
-  console.log(html);
-};
 
-exports.dutu({
-  image: require('fs').readFileSync(__dirname + '/maozi.png'),
-});
+  const str = html.match(/<script>\s*window.bd\s*=\s*(\{[\s\S]*?\})[^}]*<\/script>/) && RegExp.$1 || '{}';
+
+  const json = eval(`(${str})`);
+
+  const simiList = (json.simiList || []).map(({ FromPageSummary, FromPageSummaryOrig }) => ({
+    FromPageSummary,
+    FromPageSummaryOrig,
+  }));
+
+  return {
+    word: json.word,
+    guessWord: json.guessWord,
+    simiList,
+  };
+};
