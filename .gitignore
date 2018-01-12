@@ -6,6 +6,4 @@
 *.js.map
 *.css.map
 /node_modules
-/server/img/
-/server/test.js
 package-lock.json

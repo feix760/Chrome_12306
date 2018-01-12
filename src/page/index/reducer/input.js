@@ -15,9 +15,10 @@ const defaultState = {
   queryUrl: 'leftTicket/queryZ',
 
   OCREnable: false,
-  OCRUrl: 'http://localhost:8101/recognize',
-  OCRAK: '',
-  OCRSK: '',
+  OCRUrl: 'http://localhost:8100',
+  appId: '',
+  appKey: '',
+  appSecret: '',
 };
 
 function fn(state = defaultState, action) {

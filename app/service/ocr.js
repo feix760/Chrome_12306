@@ -2,7 +2,7 @@
 const asyncModule = require('async');
 const Canvas = require('canvas');
 const Image = Canvas.Image;
-
+const jieba = require('nodejieba');
 const baiduimg = require('./baiduimg');
 const baiduyun = require('./baiduyun');
 
@@ -14,40 +14,51 @@ function getImageBuffer(context, x1, y1, x2, y2) {
 }
 
 function parseCheckcode(source) {
-  const image = new Image();
-  image.src = source;
-  const context = new Canvas(293, 190).getContext('2d');
-  context.drawImage(image, 0, 0);
-  return {
-    image,
-    context,
-  };
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.src = source;
+    const context = new Canvas(293, 190).getContext('2d');
+    context.drawImage(image, 0, 0);
+    resolve({
+      image,
+      context,
+    });
+  });
 }
 
-function cutImage(source) {
-  const { context } = getCheckcodeContext(source);
+async function cutImage(source) {
+  const { context } = await parseCheckcode(source);
 
   const width = 67;
   const list = [];
   for (let i = 0; i < 2; i++) {
     for (let j = 0; j < 4; j++) {
-      list.push([ 5 + j * (width + 5), 40 + i * (width + 5) ]);
+      list.push({
+        x: 5 + j * (width + 5),
+        y: 40 + i * (width + 5),
+      });
     }
   }
 
   return {
-    text: getImageBuffer(context, 120, 0, 100, 30),
+    text: getImageBuffer(context, 120, 0, 240, 30),
     imageList: list.map(({ x, y }) => getImageBuffer(context, x, y, x + width, y + width)),
   };
 }
 
-async function isSimilar(info, text) {
-  return true;
+async function isSimilar({ word, guessWord, simiList }, text) {
+  return jieba.cut(text).every(w => {
+    return word.indexOf(w) > 0 || guessWord.indexOf(w) > 0 || simiList.every(
+      ({ summary, summaryOrig }) => {
+        return summary.indexOf(w) > 0 || summaryOrig.indexOf(w) > 0;
+      }
+    );
+  });
 }
 
 // 判断是否是一张坏的验证码, 例如`你的操作过于频繁..`
 exports.isBadImage = async source => {
-  const { context, image } = getCheckcodeContext(source);
+  const { context, image } = await parseCheckcode(source);
   const data = context.getImageData(0, 0, image.width, image.height);
 
   const totalCount = data.width * data.height;
@@ -86,7 +97,7 @@ exports.recognizeCheckcode = async args => {
     image,
   } = args;
 
-  const cut = cutImage(image);
+  const cut = await cutImage(image);
 
   const text = await baiduyun.accurate({
     appId,
@@ -101,7 +112,7 @@ exports.recognizeCheckcode = async args => {
       3,
       async image => {
         const info = await baiduimg.dutu(image);
-        return await isSimilar(info, text);
+        return await isSimilar(info, text) ? 1 : 0;
       },
       (err, result) => {
         err ? reject(err) : resolve(result);
@@ -109,5 +120,17 @@ exports.recognizeCheckcode = async args => {
     );
   });
 
-  return result;
+
+  const value = [];
+  result.forEach((item, index) => {
+    if (item) {
+      value.push(40 + 72 * (index % 4));
+      value.push(index > 3 ? 110 : 40);
+    }
+  });
+
+  return {
+    text,
+    value,
+  };
 };

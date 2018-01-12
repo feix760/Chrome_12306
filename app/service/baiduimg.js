@@ -1,7 +1,7 @@
 
 const request = require('request-promise-native');
 
-exports.dutu = async ({ image }) => {
+exports.dutu = async image => {
   const client = request.defaults({ jar: true });
 
   const upload = await client.post({
@@ -39,13 +39,13 @@ exports.dutu = async ({ image }) => {
   const json = eval(`(${str})`);
 
   const simiList = (json.simiList || []).map(({ FromPageSummary, FromPageSummaryOrig }) => ({
-    FromPageSummary,
-    FromPageSummaryOrig,
+    summary: FromPageSummary || '',
+    summaryOrig: FromPageSummaryOrig || '',
   }));
 
   return {
-    word: json.word,
-    guessWord: json.guessWord,
+    word: json.word || '',
+    guessWord: json.guessWord || '',
     simiList,
   };
 };

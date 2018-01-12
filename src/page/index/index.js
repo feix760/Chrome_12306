@@ -24,13 +24,13 @@ class Component extends React.Component {
 
   render() {
     const { state } = this;
-    // <OCR />
     return (
       <div>
         <AccountInput />
         <TripInput />
         <TrainSelect />
         <PassengerSelect />
+        <OCR />
         <Clock />
         <div className="layout">
           <div>

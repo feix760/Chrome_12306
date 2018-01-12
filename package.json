@@ -7,11 +7,17 @@
     "chrome extension"
   ],
   "scripts": {
-    "start": "webpack -w",
-    "server": "node index.js"
+    "start": "webpack -w & nodemon --watch app --watch index.js index.js"
   },
   "dependencies": {
+    "async": "^2.6.0",
+    "baidu-aip-sdk": "^2.0.3",
+    "canvas": "^1.3.5",
+    "koa": "^2.4.1",
+    "koa-body": "^2.5.0",
+    "koa-router": "^7.3.0",
     "moment": "^2.20.1",
+    "nodejieba": "^2.2.5",
     "querystring": "^0.2.0",
     "react": "^16.2.0",
     "react-addons-shallow-compare": "^15.6.2",
@@ -21,14 +27,7 @@
     "react-redux": "^5.0.6",
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
-    "request-promise-native": "^1.0.5",
-    "canvas": "^1.3.5",
-    "async": "^2.6.0",
-    "koa": "^2.4.1",
-    "koa-router": "^7.3.0",
-    "lodash": "^4.17.4",
-    "baidu-aip-sdk": "^2.0.3",
-    "nodejieba": "^2.2.5"
+    "request-promise-native": "^1.0.5"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -43,6 +42,7 @@
     "file-loader": "^0.11.2",
     "html-webpack-plugin": "^2.30.1",
     "node-sass": "^4.5.3",
+    "nodemon": "^1.14.11",
     "sass-loader": "^6.0.6",
     "style-loader": "^0.19.1",
     "url-loader": "^0.6.2",

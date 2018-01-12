@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-// import domtoimage from 'dom-to-image';
 import request from 'asset/common/request';
+import * as Log from '../../log';
 import api from '../../api';
 import './index.scss';
 
@@ -98,16 +98,21 @@ class Component extends React.Component {
     this.props.onSubmit && this.props.onSubmit();
   }
 
-  onLoad = async e => {
-    return;
-    // 这里有bug 不能使用domtoimage他会请求验证码url导致重置
-    const base64 = await domtoimage.toPng(e.target);
-
-    const { OCREnable, OCRUrl, OCRAK, OCRSK } = this.props.input;
+  onLoad = async () => {
+    const { OCREnable, OCRUrl, appId, appKey, appSecret} = this.props.input;
 
     if (!OCREnable) {
       return;
     }
+
+    const { checkcode } = this.refs;
+    const canvas = document.createElement('canvas');
+    canvas.width = checkcode.width;
+    canvas.height = checkcode.height;
+    const context = canvas.getContext('2d');
+    context.drawImage(checkcode, 0, 0);
+    const image = canvas.toDataURL('png');
+    const { src } = checkcode;
 
     let data;
     try {
@@ -115,20 +120,27 @@ class Component extends React.Component {
         url: OCRUrl,
         method: 'POST',
         data: {
-          ak: OCRAK,
-          sk: OCRSK,
-          img: base64,
+          appId,
+          appKey,
+          appSecret,
+          image,
         },
       });
     } catch (err) {
     }
 
-    if (data && data.retCode === 0 && data.result.length) {
-      Log.info('自动识别验证码成功');
-      this.setValue(data.result);
+    // 如果验证码已被刷新等
+    if (src !== this.state.url) {
+      return;
+    }
+
+    const { text, value} = data && data.data || {};
+    if (value && value.length) {
+      Log.info(`获取自动识别验证码成功 ${text}`);
+      this.setValue(value);
       this.props.onSubmit && this.props.onSubmit();
     } else {
-      Log.info(`自动识别验证码失败`);
+      Log.info(`获取自动识别验证码失败 ${text}`);
     }
   }
 
@@ -139,7 +151,7 @@ class Component extends React.Component {
         {
           state.url && (
             <div>
-              <img refs="img" src={state.url} onLoad={this.onLoad}/>
+              <img ref="checkcode" src={state.url} onLoad={this.onLoad}/>
               <div className="refresh-area" onClick={this.refresh}>刷新</div>
               <div className="click-area" onClick={this.addPoint} onContextMenu={this.submit}>
                 {
