@@ -11,6 +11,7 @@
     "server": "node index.js"
   },
   "dependencies": {
+    "baidu-aip-sdk": "^2.0.3",
     "dom-to-image": "^2.6.0",
     "moment": "^2.20.1",
     "querystring": "^0.2.0",
@@ -21,7 +22,8 @@
     "react-dom": "^16.2.0",
     "react-redux": "^5.0.6",
     "redux": "^3.7.2",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "request-promise": "^4.2.2"
   },
   "devDependencies": {
     "async": "^1.5.0",
@@ -35,11 +37,12 @@
     "clean-webpack-plugin": "^0.1.17",
     "copy-webpack-plugin": "^4.3.1",
     "css-loader": "^0.28.7",
-    "express": "4.9.5",
     "extract-text-webpack-plugin": "^3.0.0",
     "file-loader": "^0.11.2",
     "html-webpack-plugin": "^2.30.1",
     "jshashes": "^1.0.5",
+    "koa": "^2.4.1",
+    "koa-router": "^7.3.0",
     "lodash": "^4.17.4",
     "md5": "^2.0.0",
     "node-sass": "^4.5.3",
@@ -49,7 +52,6 @@
     "sass-loader": "^6.0.6",
     "style-loader": "^0.19.1",
     "url-loader": "^0.6.2",
-    "webpack": "^3.10.0",
-    "webpack-dev-middleware": "^2.0.4"
+    "webpack": "^3.10.0"
   }
 }

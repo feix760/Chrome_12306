@@ -23,7 +23,7 @@ function appendMsg(msg) {
     $el.removeChild($el.querySelector('#log > div'));
   }
 
-  //滚动滚动条至最下面
+  // 滚动滚动条至最下面
   setTimeout(() => {
     $el.scrollTo(0, 99999);
   }, 10);

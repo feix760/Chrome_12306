@@ -1,36 +1,25 @@
-/**
- * @file app
- * @date 2015-12-22
- */
-const http = require('http');
-const webpack = require('webpack');
-const express = require('express');
-const bodyParser = require('body-parser');
-const WebpackDevMiddleware = require('webpack-dev-middleware');
-const config = require('./webpack.config.js');
-const controller = require('./server/controller');
-const port = 8101;
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({
+  // limit: '1mb',
+  // extended: true
+// }));
 
-const app = express();
+const Koa = require('koa');
+const Router = require('koa-router');
+const chalk = require('chalk');
+const app = new Koa();
+const router = new Router();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  limit: '1mb',
-  extended: true
-}));
+const controller = {
+  home: require('./app/controller/home'),
+};
 
-// const compiler = webpack(config);
-// const webpackDevMiddleware = WebpackDevMiddleware(compiler, {
-  // publicPath: '/',
-  // stats: { colors: true },
-// });
-// app.use(webpackDevMiddleware);
+router.get('/', controller.home.index);
 
-// route
-app.use('/recognize', controller.recognize);
+app.use(router.routes())
+  .use(router.allowedMethods());
 
-app.listen(port, () => {
-  console.log('Server listening on port %d', port);
+app.listen(8000, () => {
+  console.log(chalk.green(`Server listening on port 8000`));
 });
 
-module.exports = app;
