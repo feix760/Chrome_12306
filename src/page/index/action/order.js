@@ -77,11 +77,6 @@ async function prepareSubmit(dispatch, getState) {
       type: ORDER_STATUS,
       data: 'read-checkcode',
     });
-
-    try {
-      await getQueueCount(dispatch, getState);
-    } catch (err) {
-    }
   } else {
     Log.info('无需输入验证码，自动提交订单...');
     await confirmSingleForQueue(dispatch, getState);
@@ -121,7 +116,6 @@ async function confirmSingleForQueue(dispatch, getState) {
   });
 
   const hasStopped = await getQueueCount(dispatch, getState);
-
   if (hasStopped) {
     return;
   }

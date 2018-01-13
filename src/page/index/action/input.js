@@ -78,5 +78,4 @@ export function loadAllPassenger() {
       });
     })();
   };
-
 }

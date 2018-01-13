@@ -2,7 +2,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { getUpdater, seatMap, loadAllTrain } from '../../action/input';
-import api from '../../api';
 import './index.scss';
 
 class Component extends React.Component {
