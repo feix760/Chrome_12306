@@ -12,7 +12,7 @@ const defaultState = {
   allPassenger: [],
   trainList: [], // 选择的火车列表
   passengerList: [], // 选择的购票人员列表
-  duration: 200, // 查询间隔
+  duration: 1000, // 查询间隔
   queryStudent: false, // 是否查询学生票
   queryUrl: 'leftTicket/queryZ',
 

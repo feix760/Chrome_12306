@@ -67,6 +67,7 @@ class Component extends React.Component {
       Log.info('退出登陆失败');
       return;
     }
+    this.refs.checkcode.getWrappedInstance().refresh();
     Log.info('退出登陆成功');
   }
 

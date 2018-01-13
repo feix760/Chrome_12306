@@ -38920,7 +38920,7 @@ const defaultState = {
   allPassenger: [],
   trainList: [],
   passengerList: [],
-  duration: 200,
+  duration: 1000,
   queryStudent: false,
   queryUrl: 'leftTicket/queryZ',
 
@@ -47110,6 +47110,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
         __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('退出登陆失败');
         return;
       }
+      this.refs.checkcode.getWrappedInstance().refresh();
       __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('退出登陆成功');
     };
 
