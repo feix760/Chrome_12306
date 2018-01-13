@@ -4910,33 +4910,6 @@ if (process.env.NODE_ENV !== 'production') {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["b"] = getUpdater;
-
-const INPUT_UPDATE = 'INPUT_UPDATE';
-/* harmony export (immutable) */ __webpack_exports__["a"] = INPUT_UPDATE;
-
-
-const seatMap = [{ name: '硬卧', key: 'yw', seatType: '3' }, { name: '硬座', key: 'yz', seatType: '1' }, { name: '无座', key: 'wz', seatType: '1' }, { name: '软卧', key: 'rw', seatType: '4' }, { name: '商务座', key: 'zs', seatType: '9' }, { name: '一等座', key: 'zy', seatType: 'M' }, { name: '二等座', key: 'ze', seatType: 'O' }].reduce((o, item) => Object.assign(o, { [item.key]: item }), {});
-/* harmony export (immutable) */ __webpack_exports__["d"] = seatMap;
-
-
-const passengerTypeMap = [{ name: '成人票', key: '1' }, { name: '学生票', key: '3' }, { name: '儿童票', key: '2' }].reduce((o, item) => Object.assign(o, { [item.key]: item }), {});
-/* harmony export (immutable) */ __webpack_exports__["c"] = passengerTypeMap;
-
-
-function getUpdater(dispatch) {
-  return field => data => dispatch({
-    type: INPUT_UPDATE,
-    field: field,
-    value: data.target ? data.target.type === 'checkbox' ? data.target.checked : data.target.value : data
-  });
-}
-
-/***/ }),
-/* 7 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 /* harmony export (immutable) */ __webpack_exports__["b"] = info;
 /* harmony export (immutable) */ __webpack_exports__["a"] = clear;
 
@@ -4976,6 +4949,33 @@ function info(msg) {
 function clear() {
   const $el = getEl();
   $el.innerHTML = '';
+}
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["b"] = getUpdater;
+
+const INPUT_UPDATE = 'INPUT_UPDATE';
+/* harmony export (immutable) */ __webpack_exports__["a"] = INPUT_UPDATE;
+
+
+const seatMap = [{ name: '硬卧', key: 'yw', seatType: '3' }, { name: '硬座', key: 'yz', seatType: '1' }, { name: '无座', key: 'wz', seatType: '1' }, { name: '软卧', key: 'rw', seatType: '4' }, { name: '商务座', key: 'zs', seatType: '9' }, { name: '一等座', key: 'zy', seatType: 'M' }, { name: '二等座', key: 'ze', seatType: 'O' }].reduce((o, item) => Object.assign(o, { [item.key]: item }), {});
+/* harmony export (immutable) */ __webpack_exports__["d"] = seatMap;
+
+
+const passengerTypeMap = [{ name: '成人票', key: '1' }, { name: '学生票', key: '3' }, { name: '儿童票', key: '2' }].reduce((o, item) => Object.assign(o, { [item.key]: item }), {});
+/* harmony export (immutable) */ __webpack_exports__["c"] = passengerTypeMap;
+
+
+function getUpdater(dispatch) {
+  return field => data => dispatch({
+    type: INPUT_UPDATE,
+    field: field,
+    value: data.target ? data.target.type === 'checkbox' ? data.target.checked : data.target.value : data
+  });
 }
 
 /***/ }),
@@ -5190,7 +5190,10 @@ const api = {
   },
 
   logout() {
-    return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])('https://kyfw.12306.cn/otn/login/loginOut');
+    return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])({
+      url: 'https://kyfw.12306.cn/otn/login/loginOut',
+      dataType: 'html'
+    });
   },
 
   checkUser() {
@@ -5216,8 +5219,40 @@ const api = {
         appid: 'otnj'
       }
     }).then(data => {
-      if (data && data.data && data.data.loginCheck === 'Y') {
-        return data.data;
+      if (data && data.result_code === 0) {
+        return data;
+      } else {
+        return Promise.reject(data);
+      }
+    });
+  },
+
+  uamtk() {
+    return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])({
+      url: 'https://kyfw.12306.cn/passport/web/auth/uamtk',
+      method: 'POST',
+      data: {
+        appid: 'otn'
+      }
+    }).then(data => {
+      if (data && data.newapptk) {
+        return data.newapptk;
+      } else {
+        return Promise.reject(data);
+      }
+    });
+  },
+
+  uamauthclient({ tk }) {
+    return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])({
+      url: 'https://kyfw.12306.cn/otn/uamauthclient',
+      method: 'POST',
+      data: {
+        tk
+      }
+    }).then(data => {
+      if (data && data.result_code === 0) {
+        return data;
       } else {
         return Promise.reject(data);
       }
@@ -5862,7 +5897,7 @@ function isPlainObject(value) {
 /* harmony export (immutable) */ __webpack_exports__["d"] = stopQuery;
 /* harmony export (immutable) */ __webpack_exports__["e"] = submitOrder;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__api__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__log__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__log__ = __webpack_require__(6);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
@@ -6148,7 +6183,7 @@ function submitOrder(randCode) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_asset_common_request__ = __webpack_require__(157);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__log__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__log__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__api__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__index_scss__ = __webpack_require__(234);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__index_scss__);
@@ -19065,6 +19100,8 @@ return zhTw;
 /* harmony export (immutable) */ __webpack_exports__["c"] = loginPost;
 /* harmony export (immutable) */ __webpack_exports__["d"] = logoutPost;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__api__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__log__ = __webpack_require__(6);
+
 
 
 
@@ -19074,43 +19111,53 @@ const LOGIN_SET = 'LOGIN_SET';
 
 function loginCheck() {
   return (dispatch, getState) => {
-    return __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].checkUser().catch(err => {
-      dispatch({
-        type: LOGIN_SET,
-        data: false
-      });
-      return Promise.reject(err);
-    }).then(data => {
+    return (async () => {
+      try {
+        await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].checkUser();
+      } catch (err) {
+        dispatch({
+          type: LOGIN_SET,
+          data: false
+        });
+        throw err;
+      }
+
       dispatch({
         type: LOGIN_SET,
         data: true
       });
-      return data;
-    });
+    })();
   };
 }
 
 function loginPost(data) {
   return (dispatch, getState) => {
-    return __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].login(data).then(data => {
+    return (async () => {
+      await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].login(data);
+
+      const tk = await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].uamtk();
+
+      await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].uamauthclient({
+        tk
+      });
+
       dispatch({
         type: LOGIN_SET,
         data: true
       });
-      return data;
-    });
+    })();
   };
 }
 
 function logoutPost() {
   return (dispatch, getState) => {
-    return __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].logout().then(data => {
+    return (async () => {
+      await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].logout();
       dispatch({
         type: LOGIN_SET,
         data: false
       });
-      return data;
-    });
+    })();
   };
 }
 
@@ -19170,7 +19217,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_react_dom__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react_redux__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_asset_common_component_extend__ = __webpack_require__(196);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__log__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__log__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__store__ = __webpack_require__(198);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__component_accountInput__ = __webpack_require__(207);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__component_tripInput__ = __webpack_require__(209);
@@ -38801,7 +38848,7 @@ webpackContext.id = 200;
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_moment__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_moment__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__action_input__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__action_input__ = __webpack_require__(7);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
@@ -38820,7 +38867,7 @@ const defaultState = {
   queryUrl: 'leftTicket/queryZ',
 
   OCREnable: false,
-  OCRUrl: 'http://localhost:8100',
+  OCRUrl: 'http://127.0.0.1:8100',
   appId: '',
   appKey: '',
   appSecret: ''
@@ -39140,7 +39187,7 @@ fn.deserialization = function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_input__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_input__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__index_scss__ = __webpack_require__(208);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__index_scss__);
 
@@ -39202,7 +39249,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_moment__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_moment__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__stationAutocomplete__ = __webpack_require__(219);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__action_input__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__action_input__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_react_datepicker_dist_react_datepicker_css__ = __webpack_require__(226);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_react_datepicker_dist_react_datepicker_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_react_datepicker_dist_react_datepicker_css__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__index_scss__ = __webpack_require__(227);
@@ -46596,7 +46643,7 @@ var station_names = '@bjb|北京北|VAP|beijingbei|bjb|0@bjd|北京东|BOP|beiji
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_input__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_input__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__api__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__index_scss__ = __webpack_require__(229);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__index_scss__);
@@ -46778,7 +46825,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_input__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_input__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__api__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__index_scss__ = __webpack_require__(231);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__index_scss__);
@@ -46985,7 +47032,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_login__ = __webpack_require__(156);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__checkcode__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__log__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__log__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__index_scss__ = __webpack_require__(236);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__index_scss__);
 
@@ -47009,30 +47056,45 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       });
     };
 
-    this.login = () => {
+    this.login = async () => {
       const { account, password } = this.props.input;
       if (!account || !password) {
         __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('请输入账号和密码');
-        return Promise.reject();
+        return;
       }
 
       const checkcode = this.refs.checkcode.getWrappedInstance();
+
       if (!checkcode.getValue()) {
         __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('请输入验证码');
-        return Promise.reject();
+        return;
       }
 
-      return checkcode.getCheckedRandCode().then(randCode => {
-        return this.props.loginPost({
+      try {
+        const randCode = await checkcode.getCheckedRandCode();
+
+        await this.props.loginPost({
           account,
           password,
           randCode
         });
-      });
+      } catch (err) {
+        __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('登陆失败');
+        checkcode.refresh();
+        return;
+      }
+
+      __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('登陆成功');
     };
 
-    this.logout = () => {
-      return this.props.logoutPost();
+    this.logout = async () => {
+      try {
+        this.props.logoutPost();
+      } catch (err) {
+        __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('退出登陆失败');
+        return;
+      }
+      __WEBPACK_IMPORTED_MODULE_4__log__["b" /* info */]('退出登陆成功');
     };
 
     this.state = {};
@@ -47103,7 +47165,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__checkcode__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__action_order__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__log__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__log__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__index_scss__ = __webpack_require__(238);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__index_scss__);
 
@@ -47207,8 +47269,8 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__log__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__action_input__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__log__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__action_input__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__action_order__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__index_scss__ = __webpack_require__(240);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__index_scss__);
@@ -47252,9 +47314,10 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
         this.refs.alarm.play();
 
         this._title = document.title;
+        let i = 0;
         this._titleInterval = setInterval(() => {
-          document.title = Math.random() + '';
-        }, 500);
+          document.title = i++ % 2 ? '有票了' : Math.random().toString().slice(2);
+        }, 400);
       }
     };
 
@@ -47388,7 +47451,7 @@ module.exports = __webpack_require__.p + "img/alert.a4749b25.wav";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_input__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__action_input__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__index_scss__ = __webpack_require__(244);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__index_scss__);
 

@@ -21,6 +21,6 @@ app.use(router.routes())
 
 const port = 8100;
 app.listen(port, () => {
-  console.log(chalk.green(`Server listening on port ${port}`));
+  console.log(chalk.green(`验证码识别URL: http://127.0.0.1:${port}`));
 });
 

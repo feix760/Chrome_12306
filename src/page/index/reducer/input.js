@@ -15,7 +15,7 @@ const defaultState = {
   queryUrl: 'leftTicket/queryZ',
 
   OCREnable: false,
-  OCRUrl: 'http://localhost:8100',
+  OCRUrl: 'http://127.0.0.1:8100',
   appId: '',
   appKey: '',
   appSecret: '',

@@ -28,31 +28,46 @@ class Component extends React.Component {
       });
   }
 
-  login = () => {
+  login = async () => {
     const { account, password } = this.props.input;
     if (!account || !password) {
       Log.info('请输入账号和密码');
-      return Promise.reject();
+      return;
     }
 
     const checkcode = this.refs.checkcode.getWrappedInstance();
+
     if (!checkcode.getValue()) {
       Log.info('请输入验证码');
-      return Promise.reject();
+      return;
     }
 
-    return checkcode.getCheckedRandCode()
-      .then(randCode => {
-        return this.props.loginPost({
-          account,
-          password,
-          randCode,
-        });
+    try {
+      const randCode = await checkcode.getCheckedRandCode();
+
+      await this.props.loginPost({
+        account,
+        password,
+        randCode,
       });
+
+    } catch (err) {
+      Log.info('登陆失败');
+      checkcode.refresh();
+      return;
+    }
+
+    Log.info('登陆成功');
   }
 
-  logout = () => {
-    return this.props.logoutPost();
+  logout = async () => {
+    try {
+      this.props.logoutPost();
+    } catch (err) {
+      Log.info('退出登陆失败');
+      return;
+    }
+    Log.info('退出登陆成功');
   }
 
   render() {

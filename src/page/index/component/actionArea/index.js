@@ -49,9 +49,10 @@ class Component extends React.Component {
       this.refs.alarm.play();
 
       this._title = document.title;
+      let i = 0;
       this._titleInterval = setInterval(() => {
-        document.title = Math.random() + '';
-      }, 500);
+        document.title = i++ % 2 ? '有票了' : Math.random().toString().slice(2);
+      }, 400);
     }
   }
 

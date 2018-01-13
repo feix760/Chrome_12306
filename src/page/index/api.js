@@ -47,7 +47,10 @@ const api = {
   },
 
   logout() {
-    return request('https://kyfw.12306.cn/otn/login/loginOut');
+    return request({
+      url: 'https://kyfw.12306.cn/otn/login/loginOut',
+      dataType: 'html',
+    });
   },
 
   checkUser() {
@@ -75,8 +78,42 @@ const api = {
         },
       })
       .then(data => {
-        if (data && data.data && data.data.loginCheck === 'Y') {
-          return data.data;
+        if (data && data.result_code === 0) {
+          return data;
+        } else {
+          return Promise.reject(data);
+        }
+      });
+  },
+
+  uamtk() {
+    return request({
+        url: 'https://kyfw.12306.cn/passport/web/auth/uamtk',
+        method: 'POST',
+        data: {
+          appid: 'otn',
+        },
+      })
+      .then(data => {
+        if (data && data.newapptk) {
+          return data.newapptk;
+        } else {
+          return Promise.reject(data);
+        }
+      });
+  },
+
+  uamauthclient({ tk }) {
+    return request({
+        url: 'https://kyfw.12306.cn/otn/uamauthclient',
+        method: 'POST',
+        data: {
+          tk,
+        },
+      })
+      .then(data => {
+        if (data && data.result_code === 0) {
+          return data;
         } else {
           return Promise.reject(data);
         }
