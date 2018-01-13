@@ -1,4 +1,5 @@
 
+import api from '../api';
 export const INPUT_UPDATE = 'INPUT_UPDATE';
 
 export const seatMap = [
@@ -20,9 +21,62 @@ export const passengerTypeMap = [
 export function getUpdater(dispatch) {
   return field => data => dispatch({
     type: INPUT_UPDATE,
-    field: field,
-    value: data.target
-      ? (data.target.type === 'checkbox' ? data.target.checked : data.target.value)
-      : data,
+    data: {
+      [ field ]: data.target
+        ? (data.target.type === 'checkbox' ? data.target.checked : data.target.value)
+        : data,
+    },
   });
+}
+
+export function loadAllTrain(args) {
+  return (dispatch, getState) => {
+    return (async () => {
+      const { from, to, date } = args;
+      let { queryUrl } = getState().input;
+      let allTrain;
+
+      try {
+        allTrain = await api.query({
+          queryUrl: queryUrl,
+          from: from.code,
+          to: to.code,
+          date: date.format('YYYY-MM-DD'),
+        });
+      } catch (err) {
+        queryUrl = await api.getQueryUrl();
+
+        allTrain = await api.query({
+          queryUrl,
+          from: from.code,
+          to: to.code,
+          date: date.format('YYYY-MM-DD'),
+        });
+      }
+
+      dispatch({
+        type: INPUT_UPDATE,
+        data: {
+          allTrain,
+          queryUrl,
+        },
+      });
+    })();
+  };
+}
+
+export function loadAllPassenger() {
+  return (dispatch, getState) => {
+    return (async () => {
+      const allPassenger = await api.getMyPassengers();
+
+      dispatch({
+        type: INPUT_UPDATE,
+        data: {
+          allPassenger,
+        },
+      });
+    })();
+  };
+
 }

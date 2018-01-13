@@ -1,38 +1,29 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import { getUpdater, passengerTypeMap } from '../../action/input';
+import { getUpdater, passengerTypeMap, loadAllPassenger } from '../../action/input';
 import api from '../../api';
 import './index.scss';
 
 class Component extends React.Component {
   constructor() {
     super(...arguments);
-    this.state = {
-      allPassenger: [],
-    };
   }
 
   componentDidMount() {
     if (this.props.login.hasLogin) {
-      this.refreshList();
+      this.loadAllPassenger();
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.login.hasLogin && !this.props.login.hasLogin) {
-      this.refreshList();
+      this.loadAllPassenger();
     }
   }
 
-  refreshList = () => {
-    return api.getMyPassengers()
-      .then(allPassenger => {
-        this.setState({
-          allPassenger,
-        });
-        return allPassenger;
-      });
+  loadAllPassenger = () => {
+    this.props.dispatch(loadAllPassenger());
   }
 
   addItem = () => {
@@ -41,8 +32,8 @@ class Component extends React.Component {
     if (!passengerIndex || !type) {
       return;
     }
-    const passenger = this.state.allPassenger[passengerIndex];
-    const { passengerList } = this.props.input;
+    const { allPassenger, passengerList } = this.props.input;
+    const passenger = allPassenger[passengerIndex];
 
     const found = passengerList.find(item => {
       return item.passenger_id_no === passenger.passenger_id_no;
@@ -67,14 +58,13 @@ class Component extends React.Component {
   }
 
   render() {
-    const { allPassenger } = this.state;
     const { input } = this.props;
     return (
       <section className="passenger-select">
         <span>添加乘客:</span>
         <select ref="passenger">
           {
-            allPassenger.map((item, index) => (
+            input.allPassenger.map((item, index) => (
               <option key={item.passenger_id_no} value={index}>{item.passenger_name}</option>
             ))
           }
@@ -87,7 +77,7 @@ class Component extends React.Component {
           }
         </select>
         <button type="button" onClick={this.addItem}>添加</button>
-        <button type="button" onClick={this.refreshList}>刷新</button>
+        <button type="button" onClick={this.loadAllPassenger}>刷新</button>
         {
           input.passengerList.map(item => (
             <span className="selected-item" key={item.passenger_id_no}>
@@ -110,6 +100,7 @@ export default connect(
     login,
   }),
   dispatch => ({
+    dispatch,
     update: getUpdater(dispatch),
   })
 )(Component);

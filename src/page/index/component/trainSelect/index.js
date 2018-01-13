@@ -1,22 +1,19 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import { getUpdater, seatMap } from '../../action/input';
+import { getUpdater, seatMap, loadAllTrain } from '../../action/input';
 import api from '../../api';
 import './index.scss';
 
 class Component extends React.Component {
   constructor() {
     super(...arguments);
-    this.state = {
-      allTrain: [],
-    };
   }
 
   componentDidMount() {
     const { input } = this.props;
     if (input.from && input.to && input.date) {
-      this.loadTrainList(input);
+      this.loadAllTrain();
     }
   }
 
@@ -27,44 +24,16 @@ class Component extends React.Component {
     if (nextInput.from && nextInput.to && nextInput.date
       && (nextInput.from !== input.from || nextInput.to !== input.to || nextInput.date !== input.date)
     ) {
-      this.loadTrainList(nextInput);
+      this.loadAllTrain(nextInput);
     }
   }
 
-  async loadTrainList(input) {
+  loadAllTrain = async input => {
+    input = input || this.props.input;
     if (!input.from || !input.to || !input.date) {
       return;
     }
-
-    let allTrain;
-
-    try {
-      allTrain = await api.query({
-        queryUrl: input.queryUrl,
-        from: input.from.code,
-        to: input.to.code,
-        date: input.date.format('YYYY-MM-DD'),
-      });
-    } catch (err) {
-      const queryUrl = await api.getQueryUrl();
-
-      this.props.update('queryUrl')(queryUrl);
-
-      allTrain = await api.query({
-        queryUrl,
-        from: input.from.code,
-        to: input.to.code,
-        date: input.date.format('YYYY-MM-DD'),
-      });
-    }
-
-    this.setState({
-      allTrain,
-    });
-  }
-
-  refreshList = () => {
-    this.loadTrainList(this.props.input);
+    this.props.dispatch(loadAllTrain(input));
   }
 
   addItem = () => {
@@ -74,10 +43,10 @@ class Component extends React.Component {
       return;
     }
 
-    const train = this.state.allTrain[trainKey];
+    const { allTrain, trainList } = this.props.input;
+    const train = allTrain[trainKey];
     const seat = seatMap[seatKey];
 
-    const { trainList } = this.props.input;
     const found = trainList.find(item => {
       return item.train.name === train.name && item.seat.key === seat.key;
     });
@@ -101,8 +70,8 @@ class Component extends React.Component {
   }
 
   render() {
-    const { allTrain } = this.state;
     const { input } = this.props;
+    const { allTrain } = input;
     return (
       <section className="train-select">
         <span>车次:</span>
@@ -121,7 +90,7 @@ class Component extends React.Component {
           }
         </select>
         <button type="button" onClick={this.addItem}>添加</button>
-        <button type="button" onClick={this.refreshList}>刷新</button>
+        <button type="button" onClick={this.loadAllTrain.bind(this, null)}>刷新</button>
         {
           input.trainList.map(item => (
             <span className="selected-item" key={item.train.name + '_' + item.seat.key}>
@@ -142,6 +111,7 @@ export default connect(
     input,
   }),
   dispatch => ({
+    dispatch,
     update: getUpdater(dispatch),
   })
 )(Component);

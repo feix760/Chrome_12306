@@ -8,6 +8,8 @@ const defaultState = {
   from: '',
   to: '',
   date: moment(),
+  allTrain: [],
+  allPassenger: [],
   trainList: [], // 选择的火车列表
   passengerList: [], // 选择的购票人员列表
   duration: 200, // 查询间隔
@@ -26,7 +28,7 @@ function fn(state = defaultState, action) {
     case INPUT_UPDATE:
       state = {
         ...state,
-        [action.field]: action.value,
+        ...action.data,
       };
       break;
     default:

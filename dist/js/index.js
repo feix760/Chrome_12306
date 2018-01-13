@@ -4957,25 +4957,81 @@ function clear() {
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["b"] = getUpdater;
+/* harmony export (immutable) */ __webpack_exports__["d"] = loadAllTrain;
+/* harmony export (immutable) */ __webpack_exports__["c"] = loadAllPassenger;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__api__ = __webpack_require__(10);
+
 
 const INPUT_UPDATE = 'INPUT_UPDATE';
 /* harmony export (immutable) */ __webpack_exports__["a"] = INPUT_UPDATE;
 
 
 const seatMap = [{ name: '硬卧', key: 'yw', seatType: '3' }, { name: '硬座', key: 'yz', seatType: '1' }, { name: '无座', key: 'wz', seatType: '1' }, { name: '软卧', key: 'rw', seatType: '4' }, { name: '商务座', key: 'zs', seatType: '9' }, { name: '一等座', key: 'zy', seatType: 'M' }, { name: '二等座', key: 'ze', seatType: 'O' }].reduce((o, item) => Object.assign(o, { [item.key]: item }), {});
-/* harmony export (immutable) */ __webpack_exports__["d"] = seatMap;
+/* harmony export (immutable) */ __webpack_exports__["f"] = seatMap;
 
 
 const passengerTypeMap = [{ name: '成人票', key: '1' }, { name: '学生票', key: '3' }, { name: '儿童票', key: '2' }].reduce((o, item) => Object.assign(o, { [item.key]: item }), {});
-/* harmony export (immutable) */ __webpack_exports__["c"] = passengerTypeMap;
+/* harmony export (immutable) */ __webpack_exports__["e"] = passengerTypeMap;
 
 
 function getUpdater(dispatch) {
   return field => data => dispatch({
     type: INPUT_UPDATE,
-    field: field,
-    value: data.target ? data.target.type === 'checkbox' ? data.target.checked : data.target.value : data
+    data: {
+      [field]: data.target ? data.target.type === 'checkbox' ? data.target.checked : data.target.value : data
+    }
   });
+}
+
+function loadAllTrain(args) {
+  return (dispatch, getState) => {
+    return (async () => {
+      const { from, to, date } = args;
+      let { queryUrl } = getState().input;
+      let allTrain;
+
+      try {
+        allTrain = await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].query({
+          queryUrl: queryUrl,
+          from: from.code,
+          to: to.code,
+          date: date.format('YYYY-MM-DD')
+        });
+      } catch (err) {
+        queryUrl = await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].getQueryUrl();
+
+        allTrain = await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].query({
+          queryUrl,
+          from: from.code,
+          to: to.code,
+          date: date.format('YYYY-MM-DD')
+        });
+      }
+
+      dispatch({
+        type: INPUT_UPDATE,
+        data: {
+          allTrain,
+          queryUrl
+        }
+      });
+    })();
+  };
+}
+
+function loadAllPassenger() {
+  return (dispatch, getState) => {
+    return (async () => {
+      const allPassenger = await __WEBPACK_IMPORTED_MODULE_0__api__["a" /* default */].getMyPassengers();
+
+      dispatch({
+        type: INPUT_UPDATE,
+        data: {
+          allPassenger
+        }
+      });
+    })();
+  };
 }
 
 /***/ }),
@@ -38860,6 +38916,8 @@ const defaultState = {
   from: '',
   to: '',
   date: __WEBPACK_IMPORTED_MODULE_0_moment___default()(),
+  allTrain: [],
+  allPassenger: [],
   trainList: [],
   passengerList: [],
   duration: 200,
@@ -38876,9 +38934,7 @@ const defaultState = {
 function fn(state = defaultState, action) {
   switch (action.type) {
     case __WEBPACK_IMPORTED_MODULE_1__action_input__["a" /* INPUT_UPDATE */]:
-      state = _extends({}, state, {
-        [action.field]: action.value
-      });
+      state = _extends({}, state, action.data);
       break;
     default:
       break;
@@ -46658,8 +46714,12 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
   constructor() {
     super(...arguments);
 
-    this.refreshList = () => {
-      this.loadTrainList(this.props.input);
+    this.loadAllTrain = async input => {
+      input = input || this.props.input;
+      if (!input.from || !input.to || !input.date) {
+        return;
+      }
+      this.props.dispatch(Object(__WEBPACK_IMPORTED_MODULE_2__action_input__["d" /* loadAllTrain */])(input));
     };
 
     this.addItem = () => {
@@ -46669,10 +46729,10 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
         return;
       }
 
-      const train = this.state.allTrain[trainKey];
-      const seat = __WEBPACK_IMPORTED_MODULE_2__action_input__["d" /* seatMap */][seatKey];
+      const { allTrain, trainList } = this.props.input;
+      const train = allTrain[trainKey];
+      const seat = __WEBPACK_IMPORTED_MODULE_2__action_input__["f" /* seatMap */][seatKey];
 
-      const { trainList } = this.props.input;
       const found = trainList.find(item => {
         return item.train.name === train.name && item.seat.key === seat.key;
       });
@@ -46684,16 +46744,12 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
         }]));
       }
     };
-
-    this.state = {
-      allTrain: []
-    };
   }
 
   componentDidMount() {
     const { input } = this.props;
     if (input.from && input.to && input.date) {
-      this.loadTrainList(input);
+      this.loadAllTrain();
     }
   }
 
@@ -46702,40 +46758,8 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
     const { input: nextInput } = nextProps;
 
     if (nextInput.from && nextInput.to && nextInput.date && (nextInput.from !== input.from || nextInput.to !== input.to || nextInput.date !== input.date)) {
-      this.loadTrainList(nextInput);
+      this.loadAllTrain(nextInput);
     }
-  }
-
-  async loadTrainList(input) {
-    if (!input.from || !input.to || !input.date) {
-      return;
-    }
-
-    let allTrain;
-
-    try {
-      allTrain = await __WEBPACK_IMPORTED_MODULE_3__api__["a" /* default */].query({
-        queryUrl: input.queryUrl,
-        from: input.from.code,
-        to: input.to.code,
-        date: input.date.format('YYYY-MM-DD')
-      });
-    } catch (err) {
-      const queryUrl = await __WEBPACK_IMPORTED_MODULE_3__api__["a" /* default */].getQueryUrl();
-
-      this.props.update('queryUrl')(queryUrl);
-
-      allTrain = await __WEBPACK_IMPORTED_MODULE_3__api__["a" /* default */].query({
-        queryUrl,
-        from: input.from.code,
-        to: input.to.code,
-        date: input.date.format('YYYY-MM-DD')
-      });
-    }
-
-    this.setState({
-      allTrain
-    });
   }
 
   removeItem(item) {
@@ -46749,8 +46773,8 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
   }
 
   render() {
-    const { allTrain } = this.state;
     const { input } = this.props;
+    const { allTrain } = input;
     return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       'section',
       { className: 'train-select' },
@@ -46771,10 +46795,10 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'select',
         { ref: 'seat' },
-        Object.keys(__WEBPACK_IMPORTED_MODULE_2__action_input__["d" /* seatMap */]).map(type => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        Object.keys(__WEBPACK_IMPORTED_MODULE_2__action_input__["f" /* seatMap */]).map(type => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'option',
           { value: type, key: type },
-          __WEBPACK_IMPORTED_MODULE_2__action_input__["d" /* seatMap */][type].name
+          __WEBPACK_IMPORTED_MODULE_2__action_input__["f" /* seatMap */][type].name
         ))
       ),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
@@ -46784,7 +46808,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       ),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'button',
-        { type: 'button', onClick: this.refreshList },
+        { type: 'button', onClick: this.loadAllTrain.bind(this, null) },
         '\u5237\u65B0'
       ),
       input.trainList.map(item => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
@@ -46808,6 +46832,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 }) => ({
   input
 }), dispatch => ({
+  dispatch,
   update: Object(__WEBPACK_IMPORTED_MODULE_2__action_input__["b" /* getUpdater */])(dispatch)
 }))(Component));
 
@@ -46841,13 +46866,8 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
   constructor() {
     super(...arguments);
 
-    this.refreshList = () => {
-      return __WEBPACK_IMPORTED_MODULE_3__api__["a" /* default */].getMyPassengers().then(allPassenger => {
-        this.setState({
-          allPassenger
-        });
-        return allPassenger;
-      });
+    this.loadAllPassenger = () => {
+      this.props.dispatch(Object(__WEBPACK_IMPORTED_MODULE_2__action_input__["c" /* loadAllPassenger */])());
     };
 
     this.addItem = () => {
@@ -46856,8 +46876,8 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       if (!passengerIndex || !type) {
         return;
       }
-      const passenger = this.state.allPassenger[passengerIndex];
-      const { passengerList } = this.props.input;
+      const { allPassenger, passengerList } = this.props.input;
+      const passenger = allPassenger[passengerIndex];
 
       const found = passengerList.find(item => {
         return item.passenger_id_no === passenger.passenger_id_no;
@@ -46868,21 +46888,17 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
           type })]));
       }
     };
-
-    this.state = {
-      allPassenger: []
-    };
   }
 
   componentDidMount() {
     if (this.props.login.hasLogin) {
-      this.refreshList();
+      this.loadAllPassenger();
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.login.hasLogin && !this.props.login.hasLogin) {
-      this.refreshList();
+      this.loadAllPassenger();
     }
   }
 
@@ -46897,7 +46913,6 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
   }
 
   render() {
-    const { allPassenger } = this.state;
     const { input } = this.props;
     return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       'section',
@@ -46910,7 +46925,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'select',
         { ref: 'passenger' },
-        allPassenger.map((item, index) => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        input.allPassenger.map((item, index) => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'option',
           { key: item.passenger_id_no, value: index },
           item.passenger_name
@@ -46919,10 +46934,10 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'select',
         { ref: 'type' },
-        Object.keys(__WEBPACK_IMPORTED_MODULE_2__action_input__["c" /* passengerTypeMap */]).map(type => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        Object.keys(__WEBPACK_IMPORTED_MODULE_2__action_input__["e" /* passengerTypeMap */]).map(type => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'option',
           { value: type, key: type },
-          __WEBPACK_IMPORTED_MODULE_2__action_input__["c" /* passengerTypeMap */][type].name
+          __WEBPACK_IMPORTED_MODULE_2__action_input__["e" /* passengerTypeMap */][type].name
         ))
       ),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
@@ -46932,7 +46947,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       ),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'button',
-        { type: 'button', onClick: this.refreshList },
+        { type: 'button', onClick: this.loadAllPassenger },
         '\u5237\u65B0'
       ),
       input.passengerList.map(item => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
@@ -46958,6 +46973,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
   input,
   login
 }), dispatch => ({
+  dispatch,
   update: Object(__WEBPACK_IMPORTED_MODULE_2__action_input__["b" /* getUpdater */])(dispatch)
 }))(Component));
 
