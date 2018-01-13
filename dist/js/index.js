@@ -5475,6 +5475,7 @@ const api = {
       }
     }).then(data => {
       if (data && data.data) {
+        const stationMap = data.data.map || {};
         return (data.data.result || []).map(item => {
           const fields = item.split('|');
           return {
@@ -5482,8 +5483,8 @@ const api = {
             no: fields[2],
             name: fields[3],
             secretStr: fields[0],
-            fromStationName: fields[6],
-            toStationName: fields[7],
+            fromStationName: stationMap[fields[6]] || fields[6],
+            toStationName: stationMap[fields[7]] || fields[7],
             fromStationTelecode: fields[6],
             toStationTelecode: fields[7],
             leftTicketStr: fields[12],
@@ -5495,9 +5496,7 @@ const api = {
             yz: fields[29] || '-',
             zs: fields[32] || '-',
             zy: fields[31] || '-',
-            ze: fields[30] || '-',
-            fields
-          };
+            ze: fields[30] || '-' };
         });
       } else {
         if (data && data.status === false && data.c_url) {
@@ -6212,16 +6211,26 @@ function stopQuery() {
 
 function submitOrder(randCode) {
   return (dispatch, getState) => {
-    dispatch({
-      type: ORDER_UPDATE_ATTR,
-      data: {
-        randCode
+    return (async () => {
+      dispatch({
+        type: ORDER_UPDATE_ATTR,
+        data: {
+          randCode
+        }
+      });
+
+      try {
+        await confirmSingleForQueue(dispatch, getState);
+      } catch (err) {
+        dispatch({
+          type: ORDER_STATUS,
+          data: 'fail'
+        });
+        __WEBPACK_IMPORTED_MODULE_1__log__["b" /* info */](`提交失败 耗时: ${(Date.now() - getState().order.startAt) / 1000}s ${err.toString()}`);
+        console.log(err);
+        return;
       }
-    });
-    return confirmSingleForQueue(dispatch, getState).catch(err => {
-      __WEBPACK_IMPORTED_MODULE_1__log__["b" /* info */]('提交订单失败');
-      return Promise.reject(err);
-    });
+    })();
   };
 }
 
@@ -47110,7 +47119,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 
   componentDidMount() {
     this.checkUser();
-    setInterval(this.checkUser, 1000 * 30);
+    setInterval(this.checkUser, 1000 * 60 * 5);
   }
 
   render() {

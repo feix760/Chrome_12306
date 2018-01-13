@@ -168,6 +168,7 @@ const api = {
       })
       .then(data => {
         if (data && data.data) {
+          const stationMap = data.data.map || {};
           return (data.data.result || []).map(item => {
             const fields = item.split('|');
             return {
@@ -175,8 +176,8 @@ const api = {
               no: fields[2], // 车次号
               name: fields[3], // 车次号
               secretStr: fields[0],
-              fromStationName: fields[6],
-              toStationName: fields[7],
+              fromStationName: stationMap[fields[6]] || fields[6],
+              toStationName: stationMap[fields[7]] || fields[7],
               fromStationTelecode: fields[6],
               toStationTelecode: fields[7],
               leftTicketStr: fields[12],
@@ -189,7 +190,7 @@ const api = {
               zs: fields[32] || '-', // 商务座
               zy: fields[31] || '-', // 一等座
               ze: fields[30] || '-', // 二等座
-              fields,
+              // fields,
             };
           });
         } else {

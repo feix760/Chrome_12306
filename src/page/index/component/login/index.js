@@ -15,7 +15,7 @@ class Component extends React.Component {
 
   componentDidMount() {
     this.checkUser();
-    setInterval(this.checkUser, 1000 * 30);
+    setInterval(this.checkUser, 1000 * 60 * 5);
   }
 
   checkUser = () => {

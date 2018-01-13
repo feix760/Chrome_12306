@@ -252,16 +252,25 @@ export function stopQuery() {
 
 export function submitOrder(randCode) {
   return (dispatch, getState) => {
-    dispatch({
-      type: ORDER_UPDATE_ATTR,
-      data: {
-        randCode,
-      },
-    });
-    return confirmSingleForQueue(dispatch, getState)
-      .catch(err => {
-        Log.info('提交订单失败');
-        return Promise.reject(err);
+    return (async () => {
+      dispatch({
+        type: ORDER_UPDATE_ATTR,
+        data: {
+          randCode,
+        },
       });
+
+      try {
+        await confirmSingleForQueue(dispatch, getState);
+      } catch (err) {
+        dispatch({
+          type: ORDER_STATUS,
+          data: 'fail',
+        });
+        Log.info(`提交失败 耗时: ${(Date.now() - getState().order.startAt) / 1000}s ${err.toString()}`);
+        console.log(err);
+        return;
+      }
+    })();
   };
 }
