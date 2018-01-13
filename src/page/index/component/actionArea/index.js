@@ -23,7 +23,10 @@ class Component extends React.Component {
     if (nextOrder.status === 'submit' && nextOrder.status !== order.status) {
       this.playMusic();
     }
-    if (nextOrder.status === 'stop' && nextOrder.status !== order.status && this.state.playingMusic) {
+    if (['stop', 'success', 'fail'].indexOf(nextOrder.status) !== -1
+      && nextOrder.status !== order.status
+      && this.state.playingMusic
+    ) {
       this.stopMusic();
     }
   }

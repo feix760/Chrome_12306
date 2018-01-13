@@ -5508,32 +5508,6 @@ const api = {
     });
   },
 
-  getQueueCount({ train, submitToken, seatType }) {
-    return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])({
-      url: 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
-      method: 'POST',
-      data: {
-        train_date: __WEBPACK_IMPORTED_MODULE_0_moment___default()(train.date, 'YYYYMMDD').toDate().toString(),
-        train_no: train.no,
-        stationTrainCode: train.name,
-        seatType,
-        fromStationTelecode: train.fromStationTelecode,
-        toStationTelecode: train.toStationTelecode,
-        leftTicket: train.leftTicketStr,
-        train_location: train.locationCode,
-        purpose_codes: '00',
-        _json_att: '',
-        REPEAT_SUBMIT_TOKEN: submitToken
-      }
-    }).then(data => {
-      if (data && data.data) {
-        return data.data;
-      } else {
-        return Promise.reject(data);
-      }
-    });
-  },
-
   submitOrderRequest({ train, tourFlag, isStu }) {
     const DATA_P = 'YYYY-MM-DD';
     return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])({
@@ -5554,7 +5528,7 @@ const api = {
       if (data && data.status && data.data === 'N') {
         return data.data;
       } else {
-        return Promise.reject(data);
+        return Promise.reject(data && data.data && data.data.errMsg || data);
       }
     });
   },
@@ -5604,7 +5578,33 @@ const api = {
       if (data && data.data && data.data.submitStatus) {
         return data.data;
       } else {
-        return Promise.reject(data);
+        return Promise.reject(data && data.data && data.data.errMsg || data);
+      }
+    });
+  },
+
+  getQueueCount({ train, submitToken, seatType }) {
+    return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])({
+      url: 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
+      method: 'POST',
+      data: {
+        train_date: __WEBPACK_IMPORTED_MODULE_0_moment___default()(train.date, 'YYYYMMDD').toDate().toString(),
+        train_no: train.no,
+        stationTrainCode: train.name,
+        seatType,
+        fromStationTelecode: train.fromStationTelecode,
+        toStationTelecode: train.toStationTelecode,
+        leftTicket: train.leftTicketStr,
+        train_location: train.locationCode,
+        purpose_codes: '00',
+        _json_att: '',
+        REPEAT_SUBMIT_TOKEN: submitToken
+      }
+    }).then(data => {
+      if (data && data.data) {
+        return data.data;
+      } else {
+        return Promise.reject(data && data.data && data.data.errMsg || data);
       }
     });
   },
@@ -5633,7 +5633,7 @@ const api = {
       if (data && data.data && data.data.submitStatus) {
         return data.data;
       } else {
-        return Promise.reject(data);
+        return Promise.reject(data && data.data && data.data.errMsg || data);
       }
     });
   }
@@ -6187,7 +6187,7 @@ function startQuery() {
             data: 'fail'
           });
           console.log(err);
-          __WEBPACK_IMPORTED_MODULE_1__log__["b" /* info */]('系统异常');
+          __WEBPACK_IMPORTED_MODULE_1__log__["b" /* info */](`提交失败 ${err.toString()}`);
         }
 
         if (stop) {
@@ -47352,7 +47352,7 @@ class Component extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
     if (nextOrder.status === 'submit' && nextOrder.status !== order.status) {
       this.playMusic();
     }
-    if (nextOrder.status === 'stop' && nextOrder.status !== order.status && this.state.playingMusic) {
+    if (['stop', 'success', 'fail'].indexOf(nextOrder.status) !== -1 && nextOrder.status !== order.status && this.state.playingMusic) {
       this.stopMusic();
     }
   }

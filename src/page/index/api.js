@@ -201,33 +201,6 @@ const api = {
       });
   },
 
-  getQueueCount({ train, submitToken, seatType }) {
-    return request({
-        url: 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
-        method: 'POST',
-        data: {
-          train_date: moment(train.date, 'YYYYMMDD').toDate().toString(),
-          train_no: train.no,
-          stationTrainCode: train.name,
-          seatType,
-          fromStationTelecode: train.fromStationTelecode,
-          toStationTelecode: train.toStationTelecode,
-          leftTicket: train.leftTicketStr,
-          train_location: train.locationCode,
-          purpose_codes: '00',
-          _json_att: '',
-          REPEAT_SUBMIT_TOKEN: submitToken,
-        },
-      })
-      .then(data => {
-        if (data && data.data) {
-          return data.data;
-        } else {
-          return Promise.reject(data);
-        }
-      });
-  },
-
   submitOrderRequest({ train, tourFlag, isStu }) {
     const DATA_P = 'YYYY-MM-DD';
     return request({
@@ -248,7 +221,7 @@ const api = {
         if (data && data.status && data.data === 'N') {
           return data.data;
         } else {
-          return Promise.reject(data);
+          return Promise.reject(data && data.data && data.data.errMsg || data);
         }
       });
   },
@@ -299,7 +272,34 @@ const api = {
         if (data && data.data && data.data.submitStatus) {
           return data.data;
         } else {
-          return Promise.reject(data);
+          return Promise.reject(data && data.data && data.data.errMsg || data);
+        }
+      });
+  },
+
+  getQueueCount({ train, submitToken, seatType }) {
+    return request({
+        url: 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
+        method: 'POST',
+        data: {
+          train_date: moment(train.date, 'YYYYMMDD').toDate().toString(),
+          train_no: train.no,
+          stationTrainCode: train.name,
+          seatType,
+          fromStationTelecode: train.fromStationTelecode,
+          toStationTelecode: train.toStationTelecode,
+          leftTicket: train.leftTicketStr,
+          train_location: train.locationCode,
+          purpose_codes: '00',
+          _json_att: '',
+          REPEAT_SUBMIT_TOKEN: submitToken,
+        },
+      })
+      .then(data => {
+        if (data && data.data) {
+          return data.data;
+        } else {
+          return Promise.reject(data && data.data && data.data.errMsg || data);
         }
       });
   },
@@ -329,7 +329,7 @@ const api = {
         if (data && data.data && data.data.submitStatus) {
           return data.data;
         } else {
-          return Promise.reject(data);
+          return Promise.reject(data && data.data && data.data.errMsg || data);
         }
       });
   },

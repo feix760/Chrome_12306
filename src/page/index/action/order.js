@@ -227,7 +227,7 @@ export function startQuery() {
             data: 'fail',
           });
           console.log(err);
-          Log.info('系统异常');
+          Log.info(`提交失败 ${err.toString()}`);
         }
 
         if (stop) {
