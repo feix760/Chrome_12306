@@ -56,7 +56,6 @@ const api = {
   checkUser() {
     return request({
         url: 'https://kyfw.12306.cn/otn/index/initMy12306',
-        redirect: 'error',
         dataType: 'html',
       })
       .then(data => {

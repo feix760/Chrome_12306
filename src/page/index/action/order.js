@@ -6,6 +6,8 @@ export const ORDER_STATUS = 'ORDER_STATUS';
 
 export const ORDER_UPDATE_ATTR = 'ORDER_UPDATE_ATTR';
 
+export const stopStatus = ['stop', 'success', 'fail'];
+
 function getPassengerInfo(seatType, passengerList) {
   const passengerTicketArray = [];
   const oldPassengerArray = [];
@@ -140,7 +142,7 @@ async function confirmSingleForQueue(dispatch, getState) {
 async function query(dispatch, getState) {
   const { input, order } = getState();
 
-  if (['stop', 'success', 'fail'].indexOf(order.status) !== -1) {
+  if (stopStatus.indexOf(order.status) !== -1) {
     return true;
   }
 
@@ -206,7 +208,7 @@ async function query(dispatch, getState) {
 
 export function startQuery() {
   return (dispatch, getState) => {
-    if (getState().order.status !== 'stop') {
+    if (stopStatus.indexOf(getState().order.status) === -1) {
       return Promise.reject();
     }
 

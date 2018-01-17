@@ -8,6 +8,7 @@ export default function(url, option = {}) {
   }
 
   option = {
+    redirect: 'error',
     credentials: 'include',
     ...option,
   };
@@ -31,7 +32,11 @@ export default function(url, option = {}) {
   if (option.method === 'GET') {
     url = `${url}${url.match(/\?/) ? '&' : '?'}_=${Math.random()}`;
   }
-  return fetch(url, option).then(response => {
-    return option.dataType === 'html' ? response.text() : response.json();
-  });
+  return fetch(url, option)
+    .catch(err => {
+      return Promise.reject('网络错误');
+    })
+    .then(response => {
+      return option.dataType === 'html' ? response.text() : response.json();
+    });
 }

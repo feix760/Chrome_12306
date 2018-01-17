@@ -5375,7 +5375,6 @@ const api = {
   checkUser() {
     return Object(__WEBPACK_IMPORTED_MODULE_1_asset_common_request__["a" /* default */])({
       url: 'https://kyfw.12306.cn/otn/index/initMy12306',
-      redirect: 'error',
       dataType: 'html'
     }).then(data => {
       if (data && !data.match(/var sessionInit = '([^']+)';/)) {
@@ -5966,6 +5965,10 @@ const ORDER_UPDATE_ATTR = 'ORDER_UPDATE_ATTR';
 /* harmony export (immutable) */ __webpack_exports__["b"] = ORDER_UPDATE_ATTR;
 
 
+const stopStatus = ['stop', 'success', 'fail'];
+/* unused harmony export stopStatus */
+
+
 function getPassengerInfo(seatType, passengerList) {
   const passengerTicketArray = [];
   const oldPassengerArray = [];
@@ -6100,7 +6103,7 @@ async function confirmSingleForQueue(dispatch, getState) {
 async function query(dispatch, getState) {
   const { input, order } = getState();
 
-  if (['stop', 'success', 'fail'].indexOf(order.status) !== -1) {
+  if (stopStatus.indexOf(order.status) !== -1) {
     return true;
   }
 
@@ -6165,7 +6168,7 @@ async function query(dispatch, getState) {
 
 function startQuery() {
   return (dispatch, getState) => {
-    if (getState().order.status !== 'stop') {
+    if (stopStatus.indexOf(getState().order.status) === -1) {
       return Promise.reject();
     }
 
@@ -19169,6 +19172,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
   }
 
   option = _extends({
+    redirect: 'error',
     credentials: 'include'
   }, option);
 
@@ -19190,7 +19194,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
   if (option.method === 'GET') {
     url = `${url}${url.match(/\?/) ? '&' : '?'}_=${Math.random()}`;
   }
-  return fetch(url, option).then(response => {
+  return fetch(url, option).catch(err => {
+    return Promise.reject('网络错误');
+  }).then(response => {
     return option.dataType === 'html' ? response.text() : response.json();
   });
 });

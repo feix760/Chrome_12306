@@ -76,6 +76,7 @@ module.exports = {
       }
     }),
     new HtmlWebpackPlugin({
+      chunks: [ 'index' ],
       filename: 'html/index.html',
       template: './src/page/index/index.html',
     }),
